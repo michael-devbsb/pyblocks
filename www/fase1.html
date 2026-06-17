@@ -79,7 +79,7 @@
         /* ── PAINEL CONSTRUÇÃO ── */
         .panel-construcao {
             flex: 1; background: transparent; padding: 24px;
-            display: flex; flex-direction: column; align-items: center; overflow-y: auto;
+            display: flex; flex-direction: column; align-items: center; overflow: hidden;
         }
 
         /* ── PAINEL COMPONENTES ── */
@@ -109,30 +109,87 @@
         .cenario-box strong { color: var(--primary); }
         .instrucao { font-size: 13px; line-height: 1.65; color: var(--muted); }
 
+        /* ── LEGENDA ── */
+        .legenda-formas { margin-top: 4px; }
+        .legenda-formas h4 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+        .leg-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid rgba(52,211,153,0.06); }
+        .leg-item:last-child { border-bottom: none; }
+
         /* ── CONSTRUÇÃO CONTENT ── */
         .panel-construcao h3 {
             font-size: 13px; font-weight: 700; color: var(--muted);
-            margin-bottom: 20px; text-align: center;
+            margin-bottom: 16px; text-align: center;
             text-transform: uppercase; letter-spacing: .08em;
             font-family: 'JetBrains Mono', monospace;
-        }
-        .drop-zone {
-            width: 100%; max-width: 380px; min-height: 300px;
-            background: rgba(52,211,153,0.03);
-            border: 2px dashed rgba(52,211,153,0.3);
-            border-radius: var(--radius);
-            display: flex; flex-direction: column;
-            align-items: center; gap: 12px; padding: 20px;
-            transition: border-color .2s, background .2s, box-shadow .2s;
             flex-shrink: 0;
         }
-        .drop-zone.drag-over {
-            border-color: var(--primary); background: rgba(52,211,153,0.08);
-            box-shadow: 0 0 24px rgba(52,211,153,0.2), inset 0 0 24px rgba(52,211,153,0.05);
+
+        /* ── CANVAS FLUXO ── */
+        #fluxo-canvas {
+            width: 100%; flex: 1;
+            background: rgba(52,211,153,0.02);
+            border: 2px dashed rgba(52,211,153,0.25);
+            border-radius: var(--radius);
+            position: relative; overflow: hidden;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+            min-height: 0;
         }
-        .drop-zone-empty { color: rgba(52,211,153,0.3); font-size: 13px; text-align: center; margin: auto; pointer-events: none; }
+        #fluxo-canvas.drag-over {
+            border-color: var(--primary); background: rgba(52,211,153,0.06);
+            box-shadow: 0 0 24px rgba(52,211,153,0.18), inset 0 0 24px rgba(52,211,153,0.04);
+        }
+        #setas-svg {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        #canvas-hint {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px;
+            color: rgba(52,211,153,0.3); font-size: 13px; pointer-events: none; z-index: 0;
+        }
+        #canvas-hint svg { opacity: .5; }
+
+        /* ── NÓS NO CANVAS ── */
+        .fluxo-node {
+            position: absolute; z-index: 2;
+            display: flex; align-items: center; justify-content: center;
+            cursor: grab; user-select: none;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+            transition: filter .15s;
+        }
+        .fluxo-node:hover { filter: drop-shadow(0 6px 20px rgba(52,211,153,0.4)); }
+        .fluxo-node.dragging-node { cursor: grabbing; filter: drop-shadow(0 8px 28px rgba(52,211,153,0.5)); z-index: 10; }
+
+        .node-label {
+            position: absolute; text-align: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+            pointer-events: none; line-height: 1.2;
+        }
+        .node-label .node-sub {
+            display: block; font-size: 8px; font-weight: 500; opacity: .75; margin-top: 2px;
+        }
+
+        /* ── FORM CARDS NA PALETA ── */
+        .formas-paleta {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .forma-card {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(52,211,153,0.12);
+            border-radius: 10px; padding: 10px 12px;
+            cursor: grab; user-select: none;
+            transition: background .15s, border-color .15s, transform .15s;
+        }
+        .forma-card:hover { background: rgba(52,211,153,0.07); border-color: rgba(52,211,153,0.3); transform: translateX(-2px); }
+        .forma-card.used { opacity: .25; pointer-events: none; }
+        .forma-card-info { display: flex; flex-direction: column; gap: 2px; }
+        .forma-card-info strong { font-size: 12px; font-weight: 700; color: var(--text); }
+        .forma-card-info small { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* ── BTN TESTAR ── */
         .btn-testar {
-            margin-top: 20px; width: 100%; max-width: 380px; padding: 15px;
+            margin-top: 16px; width: 100%; max-width: 100%; padding: 14px;
             background: linear-gradient(135deg, var(--p2), var(--primary));
             color: #052e16; border: none; border-radius: 12px;
             font-size: 15px; font-weight: 800; font-family: inherit; cursor: pointer;
@@ -142,51 +199,8 @@
         .btn-testar:hover { box-shadow: 0 6px 30px var(--glow); }
         .btn-testar:active { transform: scale(.98); }
 
-        /* ── COMPONENTES CONTENT ── */
-        .panel-componentes h3 {
-            font-size: 13px; font-weight: 700; color: var(--muted);
-            text-transform: uppercase; letter-spacing: .08em;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .panel-componentes p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-        /* ── BLOCOS ── */
-        .bloco {
-            width: 100%; padding: 13px 18px; border-radius: 10px; color: white;
-            font-size: 13px; font-weight: 700; cursor: grab; user-select: none;
-            transition: transform .15s, box-shadow .15s; touch-action: none;
-            font-family: 'JetBrains Mono', monospace; letter-spacing: -.01em;
-        }
-        .bloco:hover { transform: translateY(-2px); }
-        .bloco.dragging { opacity: .4; }
-
-        .bloco-inicio {
-            background: linear-gradient(135deg, #065f46, #059669);
-            border: 1px solid rgba(52,211,153,0.4); border-radius: 24px;
-            box-shadow: 0 4px 16px rgba(52,211,153,0.25), 0 0 0 1px rgba(52,211,153,0.1);
-        }
-        .bloco-inicio:hover { box-shadow: 0 6px 24px rgba(52,211,153,0.4); }
-        .bloco-dados {
-            background: linear-gradient(135deg, #7c2d12, #ea580c);
-            border: 1px solid rgba(249,115,22,0.35);
-            box-shadow: 0 4px 16px rgba(249,115,22,0.25);
-        }
-        .bloco-dados:hover { box-shadow: 0 6px 24px rgba(249,115,22,0.4); }
-        .bloco-processo {
-            background: linear-gradient(135deg, #1e3a8a, #2563eb);
-            border: 1px solid rgba(96,165,250,0.35);
-            box-shadow: 0 4px 16px rgba(59,130,246,0.25);
-        }
-        .bloco-processo:hover { box-shadow: 0 6px 24px rgba(59,130,246,0.4); }
-        .bloco-decisao {
-            background: linear-gradient(135deg, #581c87, #9333ea);
-            border: 1px solid rgba(168,85,247,0.35);
-            box-shadow: 0 4px 16px rgba(147,51,234,0.25);
-        }
-        .bloco-decisao:hover { box-shadow: 0 6px 24px rgba(147,51,234,0.4); }
-
         /* ── DIVISOR MOBILE ── */
-        .mobile-divider { display: none; width: 100%; max-width: 380px; margin: 20px 0 4px; flex-shrink: 0; }
+        .mobile-divider { display: none; width: 100%; margin: 20px 0 4px; flex-shrink: 0; }
         .mobile-divider h3 {
             font-size: 11px; font-weight: 700; color: var(--muted);
             text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;
@@ -283,9 +297,9 @@
             .panel-desafio.ativo { display: flex; }
             .panel-combined { display: none; flex: 1; flex-direction: column; overflow-y: auto; width: 100%; }
             .panel-combined.ativo { display: flex; }
-            .panel-construcao { flex: none; overflow: visible; padding: 16px 16px 0; align-items: center; }
-            .drop-zone { min-height: 220px; max-width: 100%; }
-            .btn-testar { max-width: 100%; margin-top: 16px; }
+            .panel-construcao { flex: none; overflow: visible; padding: 16px 16px 0; align-items: stretch; }
+            #fluxo-canvas { min-height: 300px; flex: none; height: 300px; }
+            .btn-testar { margin-top: 14px; }
             .panel-componentes { width: 100%; border: none; padding: 4px 16px 24px; overflow: visible; flex-shrink: 0; }
             .mobile-divider { display: block; }
             .ia-chat { width: calc(100vw - 32px); right: 16px; bottom: 88px; }
@@ -309,30 +323,111 @@
             <div class="cenario-box">
                 <p><strong>Cenário:</strong> Um cano quebrado desperdiça <strong>15 litros de água por minuto</strong>. Precisamos calcular o desperdício e emitir um alerta!</p>
             </div>
-            <p class="instrucao">Monte o algoritmo arrastando as formas na ordem correcta para ler os minutos, calcular o desperdício e verificar se o dano é crítico (> 100L).</p>
+            <p class="instrucao">Arrasta as formas para o canvas e posiciona-as <strong style="color:var(--primary)">de cima para baixo</strong> na ordem lógica correta.</p>
+            <div class="legenda-formas">
+                <h4>Guia de formas</h4>
+                <div class="leg-item">
+                    <svg width="32" height="20"><ellipse cx="16" cy="10" rx="14" ry="8" fill="#4ade80" opacity=".9"/></svg>
+                    Oval — Início / Fim
+                </div>
+                <div class="leg-item">
+                    <svg width="32" height="20"><polygon points="6,2 31,2 26,18 1,18" fill="#60a5fa" opacity=".9"/></svg>
+                    Paralelogramo — Entrada
+                </div>
+                <div class="leg-item">
+                    <svg width="32" height="20"><rect x="2" y="2" width="28" height="16" rx="3" fill="#c084fc" opacity=".9"/></svg>
+                    Retângulo — Processo
+                </div>
+                <div class="leg-item">
+                    <svg width="32" height="24"><polygon points="16,2 30,12 16,22 2,12" fill="#facc15" opacity=".9"/></svg>
+                    Losango — Decisão (SE)
+                </div>
+            </div>
         </section>
 
         <div class="panel-combined ativo" id="panel-combined">
             <section class="panel-construcao">
-                <h3>↙ Arrasta e ordena os blocos</h3>
-                <div class="drop-zone" id="pipeline-fluxo"
-                    ondragover="allowDrop(event)" ondrop="drop(event, 'pipeline-fluxo')">
-                    <div class="drop-zone-empty" id="empty-hint">Arrasta os blocos para cá</div>
+                <h3>↙ Arrasta as formas para montar</h3>
+                <div id="fluxo-canvas"
+                     ondragover="canvasDragOver(event)"
+                     ondragleave="canvasDragLeave(event)"
+                     ondrop="canvasDrop(event)">
+                    <svg id="setas-svg" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L9,3 z" fill="rgba(52,211,153,0.6)"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                    <div id="canvas-hint">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                        Arrasta as formas aqui
+                    </div>
                 </div>
                 <button class="btn-testar" onclick="verificarAlgoritmo()">▶ Testar Fluxograma</button>
-                <div class="mobile-divider"><h3>Componentes</h3></div>
+                <div class="mobile-divider"><h3>Formas</h3></div>
             </section>
 
             <section class="panel-componentes">
-                <h3>Componentes</h3>
-                <p style="margin-bottom:12px">Ordena as etapas lógicas:</p>
-                <div id="caixa-origem" style="display:flex;flex-direction:column;gap:12px;"
-                    ondragover="allowDrop(event)" ondrop="drop(event, 'caixa-origem')">
-                    <div class="bloco bloco-inicio"   draggable="true" id="item-inicio"   ondragstart="drag(event)">1. INÍCIO</div>
-                    <div class="bloco bloco-dados"    draggable="true" id="item-dados"    ondragstart="drag(event)">2. LER (minutos)</div>
-                    <div class="bloco bloco-processo" draggable="true" id="item-processo" ondragstart="drag(event)">3. CALCULAR (min × 15)</div>
-                    <div class="bloco bloco-decisao"  draggable="true" id="item-decisao"  ondragstart="drag(event)">4. SE (desperdício &gt; 100)</div>
+                <h3>Formas</h3>
+                <p style="margin-bottom:14px;">Arrasta cada forma para o canvas:</p>
+                <div class="formas-paleta" id="formas-paleta">
+
+                    <div class="forma-card" id="card-inicio" draggable="true" data-tipo="inicio"
+                         ondragstart="paletteDragStart(event)" ontouchstart="paletteTouchStart(event)">
+                        <svg width="56" height="34" viewBox="0 0 56 34">
+                            <ellipse cx="28" cy="17" rx="26" ry="14" fill="#166534" stroke="#4ade80" stroke-width="1.5"/>
+                            <text x="28" y="21" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="800" fill="#4ade80">INÍCIO</text>
+                        </svg>
+                        <div class="forma-card-info">
+                            <strong>Início</strong>
+                            <small>terminal · oval</small>
+                        </div>
+                    </div>
+
+                    <div class="forma-card" id="card-dados" draggable="true" data-tipo="dados"
+                         ondragstart="paletteDragStart(event)" ontouchstart="paletteTouchStart(event)">
+                        <svg width="56" height="34" viewBox="0 0 56 34">
+                            <polygon points="10,2 55,2 46,32 1,32" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.5"/>
+                            <text x="29" y="21" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" font-weight="800" fill="#93c5fd">LER</text>
+                        </svg>
+                        <div class="forma-card-info">
+                            <strong>Leitura</strong>
+                            <small>entrada · paralel.</small>
+                        </div>
+                    </div>
+
+                    <div class="forma-card" id="card-processo" draggable="true" data-tipo="processo"
+                         ondragstart="paletteDragStart(event)" ontouchstart="paletteTouchStart(event)">
+                        <svg width="56" height="34" viewBox="0 0 56 34">
+                            <rect x="2" y="2" width="52" height="30" rx="4" fill="#3b0764" stroke="#c084fc" stroke-width="1.5"/>
+                            <text x="28" y="21" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" font-weight="800" fill="#e9d5ff">CALCULAR</text>
+                        </svg>
+                        <div class="forma-card-info">
+                            <strong>Processo</strong>
+                            <small>cálculo · retângulo</small>
+                        </div>
+                    </div>
+
+                    <div class="forma-card" id="card-decisao" draggable="true" data-tipo="decisao"
+                         ondragstart="paletteDragStart(event)" ontouchstart="paletteTouchStart(event)">
+                        <svg width="56" height="38" viewBox="0 0 56 38">
+                            <polygon points="28,2 54,19 28,36 2,19" fill="#422006" stroke="#facc15" stroke-width="1.5"/>
+                            <text x="28" y="17" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7.5" font-weight="800" fill="#fef08a">SE desp.</text>
+                            <text x="28" y="27" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="6.5" font-weight="700" fill="#fde68a">&gt; 100L</text>
+                        </svg>
+                        <div class="forma-card-info">
+                            <strong>Decisão</strong>
+                            <small>condição · losango</small>
+                        </div>
+                    </div>
+
                 </div>
+                <p style="margin-top:16px;font-size:11px;line-height:1.6;color:rgba(165,180,252,.5);">
+                    💡 <em>Duplo clique</em> (ou duplo toque) num nó para devolvê-lo à paleta.
+                </p>
             </section>
         </div>
     </div>
@@ -342,7 +437,7 @@
             <span class="result-icon" id="result-icon">🎉</span>
             <h3 id="result-title"></h3>
             <p id="result-msg"></p>
-            <button class="result-btn" onclick="fecharModal()">Continuar</button>
+            <button class="result-btn" id="result-btn" onclick="fecharModal()">Continuar</button>
         </div>
     </div>
 
@@ -354,7 +449,7 @@
             <div class="ia-chat-avatar">🤖</div>
             <div class="ia-chat-info">
                 <strong>IA Assistente</strong>
-                <span>Fase 1 · Lógica Visual</span>
+                <span>Fase 1 · Fluxograma Visual</span>
             </div>
             <button class="ia-chat-close" onclick="toggleIA()">×</button>
         </div>
@@ -367,127 +462,475 @@
         </div>
     </div>
 
-    <script>
-        function mudarTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
-            document.getElementById('tab-' + tab).classList.add('ativo');
-            if (tab === 'desafio') {
-                document.getElementById('panel-desafio').classList.add('ativo');
-                document.getElementById('panel-combined').classList.remove('ativo');
-            } else {
-                document.getElementById('panel-desafio').classList.remove('ativo');
-                document.getElementById('panel-combined').classList.add('ativo');
-            }
+<script>
+/* ─────────────────────────────────────────────
+   CONFIGURAÇÕES DOS NÓS
+───────────────────────────────────────────── */
+const NODE_DEFS = {
+    inicio: {
+        w: 130, h: 56,
+        svg(w, h) {
+            const rx = w / 2, ry = h / 2;
+            return `<ellipse cx="${rx}" cy="${ry}" rx="${rx - 2}" ry="${ry - 2}" fill="#166534" stroke="#4ade80" stroke-width="2"/>
+                    <text x="${rx}" y="${ry + 4}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="800" fill="#4ade80">INÍCIO</text>`;
         }
+    },
+    dados: {
+        w: 150, h: 60,
+        svg(w, h) {
+            const sk = 14;
+            return `<polygon points="${sk},2 ${w - 2},2 ${w - sk - 2},${h - 2} 2,${h - 2}" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+                    <text x="${w / 2}" y="${h / 2 - 4}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="800" fill="#93c5fd">LER</text>
+                    <text x="${w / 2}" y="${h / 2 + 9}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="#60a5fa">(minutos)</text>`;
+        }
+    },
+    processo: {
+        w: 160, h: 60,
+        svg(w, h) {
+            return `<rect x="2" y="2" width="${w - 4}" height="${h - 4}" rx="6" fill="#3b0764" stroke="#c084fc" stroke-width="2"/>
+                    <text x="${w / 2}" y="${h / 2 - 3}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="800" fill="#e9d5ff">CALCULAR</text>
+                    <text x="${w / 2}" y="${h / 2 + 11}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="#c084fc">min × 15 L</text>`;
+        }
+    },
+    decisao: {
+        w: 160, h: 80,
+        svg(w, h) {
+            const mx = w / 2, my = h / 2;
+            return `<polygon points="${mx},4 ${w - 4},${my} ${mx},${h - 4} 4,${my}" fill="#422006" stroke="#facc15" stroke-width="2"/>
+                    <text x="${mx}" y="${my - 6}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" font-weight="800" fill="#fef08a">SE desp.</text>
+                    <text x="${mx}" y="${my + 8}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" fill="#fde68a">&gt; 100L</text>`;
+        }
+    }
+};
 
-        function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); }
-        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-        document.querySelectorAll('.drop-zone, #caixa-origem').forEach(el => {
-            el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
-        });
-        function drop(ev, targetId) {
-            ev.preventDefault();
-            const id = ev.dataTransfer.getData("text");
-            const node = document.getElementById(id);
-            const container = document.getElementById(targetId);
-            container.classList.remove('drag-over');
-            const hint = document.getElementById('empty-hint');
-            if (hint) hint.remove();
-            if (ev.target === container) container.appendChild(node);
-            else if (container.contains(ev.target)) container.insertBefore(node, ev.target.nextSibling);
-            else container.appendChild(node);
-        }
+/* IDs canônicos preservados do fase1.html original */
+const TIPO_TO_ITEM_ID = {
+    inicio:   'item-inicio',
+    dados:    'item-dados',
+    processo: 'item-processo',
+    decisao:  'item-decisao'
+};
 
-        let touchDragged = null, touchGhost = null, touchOffX = 0, touchOffY = 0;
-        document.querySelectorAll('.bloco').forEach(el => {
-            el.addEventListener('touchstart', onTouchStart, { passive: false });
-            el.addEventListener('touchmove', onTouchMove, { passive: false });
-            el.addEventListener('touchend', onTouchEnd, { passive: false });
-        });
-        function onTouchStart(e) {
-            e.preventDefault();
-            touchDragged = e.currentTarget;
-            const touch = e.touches[0], rect = touchDragged.getBoundingClientRect();
-            touchOffX = touch.clientX - rect.left; touchOffY = touch.clientY - rect.top;
-            touchGhost = touchDragged.cloneNode(true);
-            touchGhost.style.cssText = `position:fixed;opacity:.8;pointer-events:none;z-index:9999;width:${rect.width}px;left:${touch.clientX-touchOffX}px;top:${touch.clientY-touchOffY}px;transform:rotate(2deg) scale(1.05);`;
-            document.body.appendChild(touchGhost);
-            touchDragged.classList.add('dragging');
-        }
-        function onTouchMove(e) { e.preventDefault(); if (!touchGhost) return; const t = e.touches[0]; touchGhost.style.left = (t.clientX-touchOffX)+'px'; touchGhost.style.top = (t.clientY-touchOffY)+'px'; }
-        function onTouchEnd(e) {
-            e.preventDefault();
-            if (!touchDragged) return;
-            touchGhost && document.body.removeChild(touchGhost); touchGhost = null;
-            touchDragged.classList.remove('dragging');
-            const touch = e.changedTouches[0];
-            const below = document.elementFromPoint(touch.clientX, touch.clientY);
-            const container = below && (below.closest('#pipeline-fluxo') || below.closest('#caixa-origem'));
-            if (container) { const hint = document.getElementById('empty-hint'); if (hint) hint.remove(); container.appendChild(touchDragged); }
-            touchDragged = null;
-        }
+/* ─────────────────────────────────────────────
+   ESTADO GLOBAL
+───────────────────────────────────────────── */
+// nodesOnCanvas: array de { id (item-*), tipo, x, y }
+let nodesOnCanvas = [];
+let dragFromPalette = null;   // tipo sendo arrastado da paleta
+let nodeDrag = null;          // { id, startX, startY, offX, offY }
 
-        function verificarAlgoritmo() {
-            const pipeline = document.getElementById('pipeline-fluxo');
-            const ordem = Array.from(pipeline.children).map(c => c.id);
-            const correta = ["item-inicio","item-dados","item-processo","item-decisao"];
-            if (ordem.length < 4) { mostrarModal(false,"Algoritmo incompleto!","Usa todos os 4 blocos para montar o fluxograma completo."); return; }
-            const acertou = ordem.every((v,i) => v === correta[i]);
-            mostrarModal(acertou, acertou?"Fluxo perfeito! 🌍":"Sequência incorrecta!", acertou?"Construíste o algoritmo correctamente!":"A ordem lógica falhou. Pensa: o que o algoritmo precisa saber primeiro?");
-        }
-        function mostrarModal(sucesso, titulo, msg) {
-            document.getElementById('result-icon').textContent = sucesso ? '🎉' : '🔄';
-            document.getElementById('result-title').textContent = titulo;
-            document.getElementById('result-msg').textContent = msg;
-            const btn = document.querySelector('.result-btn');
-            if (sucesso) {
-                btn.textContent = 'Próxima Fase →';
-                btn.style.background = 'linear-gradient(135deg,#059669,#34d399)';
-                btn.onclick = () => {
-                    fecharModal();
-                    try { window.parent.postMessage({ type: 'fase_completa', fase: 1 }, '*'); } catch(e) {}
-                    try { window.parent.postMessage({ type: 'proxima_fase', atual: 1 }, '*'); } catch(e) {}
-                };
-                localStorage.setItem('@pyblocks_fase1_completa', 'true');
-            } else {
-                btn.textContent = 'Tentar novamente';
-                btn.style.background = 'linear-gradient(135deg,#b45309,#f97316)';
-                btn.onclick = fecharModal;
-            }
-            document.getElementById('result-overlay').classList.add('show');
-        }
-        function fecharModal() { document.getElementById('result-overlay').classList.remove('show'); }
+/* ─────────────────────────────────────────────
+   TAB (mantida do original)
+───────────────────────────────────────────── */
+function mudarTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+    document.getElementById('tab-' + tab).classList.add('ativo');
+    if (tab === 'desafio') {
+        document.getElementById('panel-desafio').classList.add('ativo');
+        document.getElementById('panel-combined').classList.remove('ativo');
+    } else {
+        document.getElementById('panel-desafio').classList.remove('ativo');
+        document.getElementById('panel-combined').classList.add('ativo');
+    }
+}
 
-        function toggleIA() {
-            const chat = document.getElementById('ia-chat');
-            const badge = document.getElementById('ia-badge');
-            chat.classList.toggle('open');
-            if (badge) badge.style.display = 'none';
-            if (chat.classList.contains('open')) setTimeout(() => document.getElementById('ia-input').focus(), 250);
-        }
-        function enviarMensagem() {
-            const input = document.getElementById('ia-input');
-            const msgs = document.getElementById('ia-messages');
-            const texto = input.value.trim();
-            if (!texto) return;
-            input.value = '';
-            const u = document.createElement('div'); u.className = 'msg msg-user'; u.textContent = texto; msgs.appendChild(u);
-            const t = document.createElement('div'); t.className = 'msg msg-typing'; t.textContent = 'A pensar...'; msgs.appendChild(t);
-            msgs.scrollTop = msgs.scrollHeight;
-            setTimeout(() => {
-                t.remove();
-                const b = document.createElement('div'); b.className = 'msg msg-bot'; b.textContent = gerarResposta(texto.toLowerCase()); msgs.appendChild(b);
-                msgs.scrollTop = msgs.scrollHeight;
-            }, 850);
-        }
-        function gerarResposta(q) {
-            if (q.includes('início')||q.includes('start')) return 'O bloco INÍCIO marca o ponto de entrada. Todo fluxograma começa aqui!';
-            if (q.includes('ler')||q.includes('input')||q.includes('minutos')) return 'O bloco LER recebe os dados do utilizador — no nosso caso, os minutos de vazamento.';
-            if (q.includes('calcula')||q.includes('15')||q.includes('processo')) return 'CALCULAR multiplica os minutos por 15 para obter o total de litros perdidos.';
-            if (q.includes('se')||q.includes('if')||q.includes('100')||q.includes('decisao')) return 'O bloco SE verifica a condição: se desperdício > 100L, emite alerta crítico!';
-            if (q.includes('ordem')||q.includes('sequência')) return 'Ordem correcta: INÍCIO → LER → CALCULAR → SE. Segue esse fluxo!';
-            return 'Pensa em passos: receber dados → calcular → decidir. Segue essa lógica! 💪';
-        }
-    </script>
+/* ─────────────────────────────────────────────
+   PALETA → CANVAS  (drag & drop desktop)
+───────────────────────────────────────────── */
+function paletteDragStart(ev) {
+    dragFromPalette = ev.currentTarget.dataset.tipo;
+    ev.dataTransfer.effectAllowed = 'copy';
+    ev.dataTransfer.setData('text/plain', dragFromPalette);
+}
+
+function canvasDragOver(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'copy';
+    document.getElementById('fluxo-canvas').classList.add('drag-over');
+}
+
+function canvasDragLeave(ev) {
+    if (!ev.currentTarget.contains(ev.relatedTarget)) {
+        document.getElementById('fluxo-canvas').classList.remove('drag-over');
+    }
+}
+
+function canvasDrop(ev) {
+    ev.preventDefault();
+    document.getElementById('fluxo-canvas').classList.remove('drag-over');
+    const tipo = ev.dataTransfer.getData('text/plain') || dragFromPalette;
+    if (!tipo || !NODE_DEFS[tipo]) return;
+    const itemId = TIPO_TO_ITEM_ID[tipo];
+    if (nodesOnCanvas.find(n => n.id === itemId)) return; // já no canvas
+
+    const canvas = document.getElementById('fluxo-canvas');
+    const rect = canvas.getBoundingClientRect();
+    const def = NODE_DEFS[tipo];
+    const x = ev.clientX - rect.left - def.w / 2;
+    const y = ev.clientY - rect.top  - def.h / 2;
+    addNodeToCanvas(tipo, itemId, Math.max(4, x), Math.max(4, y));
+    dragFromPalette = null;
+}
+
+/* ─────────────────────────────────────────────
+   PALETA → CANVAS  (touch)
+───────────────────────────────────────────── */
+let touchPaletteGhost = null, touchPaletteTipo = null;
+let touchPaletteOffX = 0, touchPaletteOffY = 0;
+
+function paletteTouchStart(ev) {
+    if (ev.touches.length !== 1) return;
+    ev.preventDefault();
+    const card = ev.currentTarget;
+    if (card.classList.contains('used')) return;
+    touchPaletteTipo = card.dataset.tipo;
+    const touch = ev.touches[0];
+    const rect = card.getBoundingClientRect();
+    touchPaletteOffX = touch.clientX - rect.left;
+    touchPaletteOffY = touch.clientY - rect.top;
+
+    touchPaletteGhost = card.cloneNode(true);
+    touchPaletteGhost.style.cssText = `position:fixed;opacity:.85;pointer-events:none;z-index:9999;
+        left:${touch.clientX - touchPaletteOffX}px;top:${touch.clientY - touchPaletteOffY}px;
+        transform:scale(1.05) rotate(1.5deg);border-radius:10px;`;
+    document.body.appendChild(touchPaletteGhost);
+
+    document.addEventListener('touchmove', onPaletteTouchMove, { passive: false });
+    document.addEventListener('touchend', onPaletteTouchEnd, { passive: false });
+}
+
+function onPaletteTouchMove(ev) {
+    ev.preventDefault();
+    const t = ev.touches[0];
+    if (touchPaletteGhost) {
+        touchPaletteGhost.style.left = (t.clientX - touchPaletteOffX) + 'px';
+        touchPaletteGhost.style.top  = (t.clientY - touchPaletteOffY) + 'px';
+    }
+}
+
+function onPaletteTouchEnd(ev) {
+    document.removeEventListener('touchmove', onPaletteTouchMove);
+    document.removeEventListener('touchend', onPaletteTouchEnd);
+    if (touchPaletteGhost) { document.body.removeChild(touchPaletteGhost); touchPaletteGhost = null; }
+
+    const touch = ev.changedTouches[0];
+    const canvas = document.getElementById('fluxo-canvas');
+    const rect = canvas.getBoundingClientRect();
+    const tipo = touchPaletteTipo;
+    touchPaletteTipo = null;
+    if (!tipo) return;
+    if (touch.clientX < rect.left || touch.clientX > rect.right ||
+        touch.clientY < rect.top  || touch.clientY > rect.bottom) return;
+
+    const itemId = TIPO_TO_ITEM_ID[tipo];
+    if (nodesOnCanvas.find(n => n.id === itemId)) return;
+    const def = NODE_DEFS[tipo];
+    const x = touch.clientX - rect.left - def.w / 2;
+    const y = touch.clientY - rect.top  - def.h / 2;
+    addNodeToCanvas(tipo, itemId, Math.max(4, x), Math.max(4, y));
+}
+
+/* ─────────────────────────────────────────────
+   CRIAR NÓ NO CANVAS
+───────────────────────────────────────────── */
+function addNodeToCanvas(tipo, itemId, x, y) {
+    const def = NODE_DEFS[tipo];
+    const canvas = document.getElementById('fluxo-canvas');
+
+    // Ocultar hint
+    const hint = document.getElementById('canvas-hint');
+    if (hint) hint.style.display = 'none';
+
+    // Criar elemento DOM do nó
+    const el = document.createElement('div');
+    el.className = 'fluxo-node';
+    el.id = itemId;          // preserva: item-inicio, item-dados, etc.
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.style.width  = def.w + 'px';
+    el.style.height = def.h + 'px';
+
+    el.innerHTML = `<svg width="${def.w}" height="${def.h}" xmlns="http://www.w3.org/2000/svg">${def.svg(def.w, def.h)}</svg>`;
+
+    // Arrastar o nó dentro do canvas
+    el.addEventListener('mousedown', nodeMouseDown);
+    el.addEventListener('touchstart', nodeTouchStart, { passive: false });
+
+    // Duplo clique/toque → devolver à paleta
+    el.addEventListener('dblclick', () => removeNodeFromCanvas(itemId));
+    el.addEventListener('touchend', nodeTouchEndForDouble);
+
+    canvas.appendChild(el);
+
+    nodesOnCanvas.push({ id: itemId, tipo, x, y });
+
+    // Marcar card da paleta como usado
+    const card = document.getElementById('card-' + tipo);
+    if (card) card.classList.add('used');
+
+    drawArrows();
+}
+
+/* ─────────────────────────────────────────────
+   REMOVER NÓ (devolver à paleta)
+───────────────────────────────────────────── */
+function removeNodeFromCanvas(itemId) {
+    const el = document.getElementById(itemId);
+    if (el) el.remove();
+    const node = nodesOnCanvas.find(n => n.id === itemId);
+    if (node) {
+        nodesOnCanvas = nodesOnCanvas.filter(n => n.id !== itemId);
+        const card = document.getElementById('card-' + node.tipo);
+        if (card) card.classList.remove('used');
+    }
+    if (nodesOnCanvas.length === 0) {
+        const hint = document.getElementById('canvas-hint');
+        if (hint) hint.style.display = '';
+    }
+    drawArrows();
+}
+
+/* ─────────────────────────────────────────────
+   DRAG DO NÓ DENTRO DO CANVAS (mouse)
+───────────────────────────────────────────── */
+function nodeMouseDown(ev) {
+    if (ev.button !== 0) return;
+    ev.preventDefault();
+    const el = ev.currentTarget;
+    const canvas = document.getElementById('fluxo-canvas');
+    const cRect = canvas.getBoundingClientRect();
+    const eRect = el.getBoundingClientRect();
+    nodeDrag = {
+        id: el.id,
+        offX: ev.clientX - eRect.left,
+        offY: ev.clientY - eRect.top
+    };
+    el.classList.add('dragging-node');
+    document.addEventListener('mousemove', nodeMouseMove);
+    document.addEventListener('mouseup', nodeMouseUp);
+}
+
+function nodeMouseMove(ev) {
+    if (!nodeDrag) return;
+    const canvas = document.getElementById('fluxo-canvas');
+    const cRect = canvas.getBoundingClientRect();
+    const el = document.getElementById(nodeDrag.id);
+    const def = NODE_DEFS[nodesOnCanvas.find(n => n.id === nodeDrag.id)?.tipo];
+    if (!el || !def) return;
+
+    let nx = ev.clientX - cRect.left - nodeDrag.offX;
+    let ny = ev.clientY - cRect.top  - nodeDrag.offY;
+    nx = Math.max(0, Math.min(cRect.width  - def.w, nx));
+    ny = Math.max(0, Math.min(cRect.height - def.h, ny));
+
+    el.style.left = nx + 'px';
+    el.style.top  = ny + 'px';
+    const nodeObj = nodesOnCanvas.find(n => n.id === nodeDrag.id);
+    if (nodeObj) { nodeObj.x = nx; nodeObj.y = ny; }
+    drawArrows();
+}
+
+function nodeMouseUp() {
+    if (nodeDrag) {
+        const el = document.getElementById(nodeDrag.id);
+        if (el) el.classList.remove('dragging-node');
+        nodeDrag = null;
+    }
+    document.removeEventListener('mousemove', nodeMouseMove);
+    document.removeEventListener('mouseup', nodeMouseUp);
+}
+
+/* ─────────────────────────────────────────────
+   DRAG DO NÓ DENTRO DO CANVAS (touch)
+───────────────────────────────────────────── */
+let touchNodeEl = null, touchNodeOffX = 0, touchNodeOffY = 0;
+let touchLastTime = 0, touchLastId = null;
+
+function nodeTouchStart(ev) {
+    if (ev.touches.length !== 1) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    const el = ev.currentTarget;
+    const touch = ev.touches[0];
+    const eRect = el.getBoundingClientRect();
+    touchNodeEl = el;
+    touchNodeOffX = touch.clientX - eRect.left;
+    touchNodeOffY = touch.clientY - eRect.top;
+    el.classList.add('dragging-node');
+    document.addEventListener('touchmove', onNodeTouchMove, { passive: false });
+    document.addEventListener('touchend', onNodeTouchUp, { passive: false });
+}
+
+function onNodeTouchMove(ev) {
+    ev.preventDefault();
+    if (!touchNodeEl) return;
+    const touch = ev.touches[0];
+    const canvas = document.getElementById('fluxo-canvas');
+    const cRect = canvas.getBoundingClientRect();
+    const def = NODE_DEFS[nodesOnCanvas.find(n => n.id === touchNodeEl.id)?.tipo];
+    if (!def) return;
+
+    let nx = touch.clientX - cRect.left - touchNodeOffX;
+    let ny = touch.clientY - cRect.top  - touchNodeOffY;
+    nx = Math.max(0, Math.min(cRect.width  - def.w, nx));
+    ny = Math.max(0, Math.min(cRect.height - def.h, ny));
+
+    touchNodeEl.style.left = nx + 'px';
+    touchNodeEl.style.top  = ny + 'px';
+    const nodeObj = nodesOnCanvas.find(n => n.id === touchNodeEl.id);
+    if (nodeObj) { nodeObj.x = nx; nodeObj.y = ny; }
+    drawArrows();
+}
+
+function onNodeTouchUp(ev) {
+    document.removeEventListener('touchmove', onNodeTouchMove);
+    document.removeEventListener('touchend', onNodeTouchUp);
+    if (touchNodeEl) {
+        touchNodeEl.classList.remove('dragging-node');
+        touchNodeEl = null;
+    }
+}
+
+// Duplo toque para remover
+function nodeTouchEndForDouble(ev) {
+    const now = Date.now();
+    const id = ev.currentTarget.id;
+    if (touchLastId === id && now - touchLastTime < 350) {
+        removeNodeFromCanvas(id);
+        touchLastId = null;
+    } else {
+        touchLastTime = now;
+        touchLastId = id;
+    }
+}
+
+/* ─────────────────────────────────────────────
+   DESENHAR SETAS  (ordem vertical dos nós)
+───────────────────────────────────────────── */
+function drawArrows() {
+    const svg = document.getElementById('setas-svg');
+    // Limpa setas antigas
+    svg.querySelectorAll('.seta').forEach(e => e.remove());
+    if (nodesOnCanvas.length < 2) return;
+
+    // Ordenar por posição Y (de cima para baixo)
+    const sorted = [...nodesOnCanvas].sort((a, b) => a.y - b.y);
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+        const a = sorted[i], b = sorted[i + 1];
+        const defA = NODE_DEFS[a.tipo], defB = NODE_DEFS[b.tipo];
+        // Ponto de saída: base central do nó A
+        const x1 = a.x + defA.w / 2;
+        const y1 = a.y + defA.h;
+        // Ponto de entrada: topo central do nó B
+        const x2 = b.x + defB.w / 2;
+        const y2 = b.y;
+
+        const cy1 = y1 + (y2 - y1) * 0.45;
+        const cy2 = y1 + (y2 - y1) * 0.55;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.classList.add('seta');
+        path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${cy1}, ${x2} ${cy2}, ${x2} ${y2}`);
+        path.setAttribute('stroke', 'rgba(52,211,153,0.5)');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', 'url(#arr)');
+        path.setAttribute('stroke-dasharray', '5 3');
+        svg.appendChild(path);
+    }
+}
+
+/* ─────────────────────────────────────────────
+   VERIFICAR ALGORITMO  (preservado do original)
+───────────────────────────────────────────── */
+function verificarAlgoritmo() {
+    // Ordem canónica correta
+    const correta = ['item-inicio', 'item-dados', 'item-processo', 'item-decisao'];
+
+    if (nodesOnCanvas.length < 4) {
+        mostrarModal(false, 'Algoritmo incompleto!', 'Usa todos os 4 blocos para montar o fluxograma completo.');
+        return;
+    }
+
+    // Avaliar pela posição Y crescente
+    const sorted = [...nodesOnCanvas].sort((a, b) => a.y - b.y).map(n => n.id);
+    const acertou = sorted.every((v, i) => v === correta[i]);
+
+    mostrarModal(
+        acertou,
+        acertou ? 'Fluxo perfeito! 🌍' : 'Sequência incorrecta!',
+        acertou
+            ? 'Construíste o algoritmo correctamente!'
+            : 'A ordem lógica falhou. Pensa: o que o algoritmo precisa saber primeiro?'
+    );
+}
+
+/* ─────────────────────────────────────────────
+   MODAL  (preservado do original)
+───────────────────────────────────────────── */
+function mostrarModal(sucesso, titulo, msg) {
+    document.getElementById('result-icon').textContent = sucesso ? '🎉' : '🔄';
+    document.getElementById('result-title').textContent = titulo;
+    document.getElementById('result-msg').textContent = msg;
+    const btn = document.getElementById('result-btn');
+    if (sucesso) {
+        btn.textContent = 'Próxima Fase →';
+        btn.style.background = 'linear-gradient(135deg,#059669,#34d399)';
+        btn.onclick = () => {
+            fecharModal();
+            try { window.parent.postMessage({ type: 'fase_completa', fase: 1 }, '*'); } catch(e) {}
+            try { window.parent.postMessage({ type: 'proxima_fase', atual: 1 }, '*'); } catch(e) {}
+        };
+        localStorage.setItem('@pyblocks_fase1_completa', 'true');
+    } else {
+        btn.textContent = 'Tentar novamente';
+        btn.style.background = 'linear-gradient(135deg,#b45309,#f97316)';
+        btn.onclick = fecharModal;
+    }
+    document.getElementById('result-overlay').classList.add('show');
+}
+
+function fecharModal() {
+    document.getElementById('result-overlay').classList.remove('show');
+}
+
+/* ─────────────────────────────────────────────
+   IA CHAT  (preservado do original)
+───────────────────────────────────────────── */
+function toggleIA() {
+    const chat = document.getElementById('ia-chat');
+    const badge = document.getElementById('ia-badge');
+    chat.classList.toggle('open');
+    if (badge) badge.style.display = 'none';
+    if (chat.classList.contains('open')) setTimeout(() => document.getElementById('ia-input').focus(), 250);
+}
+
+function enviarMensagem() {
+    const input = document.getElementById('ia-input');
+    const msgs = document.getElementById('ia-messages');
+    const texto = input.value.trim();
+    if (!texto) return;
+    input.value = '';
+    const u = document.createElement('div'); u.className = 'msg msg-user'; u.textContent = texto; msgs.appendChild(u);
+    const t = document.createElement('div'); t.className = 'msg msg-typing'; t.textContent = 'A pensar...'; msgs.appendChild(t);
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => {
+        t.remove();
+        const b = document.createElement('div'); b.className = 'msg msg-bot'; b.textContent = gerarResposta(texto.toLowerCase()); msgs.appendChild(b);
+        msgs.scrollTop = msgs.scrollHeight;
+    }, 850);
+}
+
+function gerarResposta(q) {
+    if (q.includes('início') || q.includes('start'))        return 'O bloco INÍCIO marca o ponto de entrada. Todo fluxograma começa aqui!';
+    if (q.includes('ler') || q.includes('input') || q.includes('minutos')) return 'O bloco LER recebe os dados do utilizador — no nosso caso, os minutos de vazamento.';
+    if (q.includes('calcula') || q.includes('15') || q.includes('processo')) return 'CALCULAR multiplica os minutos por 15 para obter o total de litros perdidos.';
+    if (q.includes('se') || q.includes('if') || q.includes('100') || q.includes('decisao')) return 'O bloco SE verifica a condição: se desperdício > 100L, emite alerta crítico!';
+    if (q.includes('ordem') || q.includes('sequência')) return 'Ordem correcta: INÍCIO → LER → CALCULAR → SE. Segue esse fluxo!';
+    if (q.includes('seta') || q.includes('arrow') || q.includes('connect')) return 'As setas aparecem automaticamente ligando os nós de cima para baixo conforme os posicionas no canvas!';
+    return 'Pensa em passos: receber dados → calcular → decidir. Segue essa lógica! 💪';
+}
+</script>
 </body>
 </html>
