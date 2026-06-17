@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PyBlocks - Aprenda Programando</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #080420;
+            --bg2:       #0f0840;
+            --card:      rgba(255,255,255,0.05);
+            --card2:     rgba(255,255,255,0.08);
+            --primary:   #8b5cf6;
+            --primary2:  #7c3aed;
+            --cyan:      #22d3ee;
+            --pink:      #f472b6;
+            --green:     #34d399;
+            --text:      #f1f5f9;
+            --muted:     #a5b4fc;
+            --border:    rgba(139,92,246,0.25);
+            --border2:   rgba(34,211,238,0.2);
+            --glow-p:    rgba(139,92,246,0.4);
+            --glow-c:    rgba(34,211,238,0.3);
+            --sidebar-w: 240px;
+            --radius:    16px;
+            --radius-sm: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100dvh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── ANIMATED BACKGROUND ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 15% 30%, rgba(139,92,246,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 85% 70%, rgba(34,211,238,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 60% at 50% 0%,  rgba(244,114,182,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        body > * { position: relative; z-index: 1; }
+
+        /* ── GRID LINES (subtle) ── */
+        body::after {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: rgba(15,8,64,0.7);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; margin-bottom: 32px;
+            cursor: pointer; border-radius: var(--radius-sm);
+            transition: background .2s;
+        }
+        .logo:hover { background: rgba(139,92,246,0.12); }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 16px var(--glow-p);
+        }
+        .logo-text {
+            font-size: 20px; font-weight: 900;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: -.01em;
+        }
+
+        .nav-section-label {
+            font-size: 10px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .1em;
+            padding: 0 12px; margin-bottom: 8px;
+        }
+        .nav-items { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            color: var(--muted); transition: all .2s; user-select: none;
+        }
+        .nav-item:hover { background: rgba(139,92,246,0.1); color: var(--text); }
+        .nav-item.ativo {
+            background: rgba(139,92,246,0.15);
+            color: var(--primary);
+            font-weight: 600;
+            border: 1px solid rgba(139,92,246,0.2);
+            box-shadow: 0 0 12px rgba(139,92,246,0.1);
+        }
+        .nav-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── MAIN ── */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
+        .content-area { flex: 1; overflow: hidden; position: relative; }
+        .phase-iframe { width: 100%; height: 100%; border: none; background: transparent; }
+
+        /* ── WELCOME SCREEN ── */
+        .welcome-wrap {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px; overflow-y: auto;
+        }
+        .welcome-card {
+            background: rgba(15,8,64,0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 40px rgba(139,92,246,0.1);
+            width: 100%; max-width: 440px; overflow: hidden;
+        }
+        .welcome-header {
+            background: linear-gradient(135deg, #4c1d95, #1e1b5e 50%, #0e3460);
+            padding: 36px 32px 36px;
+            text-align: center; position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+        .welcome-header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, rgba(139,92,246,0.3) 0%, transparent 70%);
+        }
+        .welcome-emoji { font-size: 52px; margin-bottom: 14px; display: block; position: relative; }
+        .welcome-header h1 {
+            color: white; font-size: 26px; font-weight: 900;
+            line-height: 1.2; position: relative;
+            text-shadow: 0 0 30px rgba(139,92,246,0.6);
+        }
+        .welcome-header h1 span { color: var(--cyan); }
+
+        .welcome-body { padding: 28px 32px 32px; }
+        .welcome-body p {
+            color: var(--muted); font-size: 14px; line-height: 1.6;
+            margin-bottom: 24px; text-align: center;
+        }
+        .input-wrap { margin-bottom: 20px; }
+        .input-wrap label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+        .input-field {
+            width: 100%; padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 15px; font-family: inherit; color: var(--text); outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .input-field::placeholder { color: rgba(165,180,252,0.4); }
+        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+
+        .btn-primary {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--primary2), var(--primary));
+            color: white; border: none; border-radius: var(--radius-sm);
+            font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+            letter-spacing: .02em; transition: opacity .2s, transform .1s, box-shadow .2s;
+            box-shadow: 0 4px 20px var(--glow-p);
+        }
+        .btn-primary:hover { box-shadow: 0 6px 28px var(--glow-p); }
+        .btn-primary:active { transform: scale(.98); opacity: .9; }
+
+        /* ── DASHBOARD ── */
+        .dashboard { width: 100%; height: 100%; overflow-y: auto; padding: 32px 28px; }
+        .dashboard-greeting { margin-bottom: 8px; }
+        .dashboard-greeting h1 {
+            font-size: 28px; font-weight: 900; color: var(--text);
+        }
+        .dashboard-greeting h1 span {
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .dashboard-greeting p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+        .trilha-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .09em; color: var(--muted); margin: 28px 0 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .trilha-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .phase-card {
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden; cursor: pointer;
+            transition: transform .2s, box-shadow .2s, border-color .2s;
+        }
+        .phase-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(139,92,246,0.5);
+            box-shadow: 0 8px 32px rgba(139,92,246,0.2), 0 0 0 1px rgba(139,92,246,0.1);
+        }
+        .phase-card:active { transform: scale(.98); }
+        .phase-card-top { padding: 24px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+        .phase-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        }
+        .phase-num { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+        .phase-card-body { padding: 16px 24px 24px; }
+        .phase-card-body h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .phase-card-body p { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+        .phase-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 20px; border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 700; font-family: inherit; color: white;
+            cursor: pointer; transition: opacity .2s, box-shadow .2s;
+        }
+        .phase-btn:hover { opacity: .88; }
+        .phase-accent-bar { height: 4px; }
+
+        /* ── MOBILE TOP BAR ── */
+        .mobile-topbar {
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px;
+            background: rgba(8,4,32,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 200; align-items: center; justify-content: space-between; padding: 0 8px;
+            box-shadow: 0 2px 20px rgba(139,92,246,0.1);
+        }
+        .topbar-btn {
+            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; cursor: pointer; color: var(--muted); transition: all .18s;
+            border: none; background: none; flex-shrink: 0;
+        }
+        .topbar-btn:hover { background: rgba(139,92,246,0.12); color: var(--primary); }
+        .topbar-logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .topbar-logo-icon {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            border-radius: 9px; display: flex; align-items: center; justify-content: center;
+            font-size: 15px; box-shadow: 0 0 12px var(--glow-p);
+        }
+        .topbar-logo-text {
+            font-size: 17px; font-weight: 900;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* ── DRAWER OVERLAY ── */
+        .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300; backdrop-filter: blur(4px); }
+        .drawer-overlay.open { display: block; }
+
+        /* ── DRAWER ── */
+        .drawer {
+            position: fixed; top: 0; left: 0; bottom: 0; width: 280px;
+            background: rgba(12,6,48,0.95); backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border);
+            z-index: 400; display: flex; flex-direction: column;
+            transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+            box-shadow: 4px 0 40px rgba(0,0,0,.5), 0 0 40px rgba(139,92,246,0.1);
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-header { display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+        .drawer-logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; box-shadow: 0 0 16px var(--glow-p);
+        }
+        .drawer-logo-text {
+            font-size: 20px; font-weight: 900;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .drawer-nav { padding: 16px 12px; flex: 1; }
+        .drawer-section-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .1em; color: var(--muted); padding: 0 8px; margin-bottom: 8px;
+        }
+        .drawer-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 16px; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            color: var(--muted); transition: all .18s; margin-bottom: 2px;
+        }
+        .drawer-item:hover { background: rgba(139,92,246,0.1); color: var(--text); }
+        .drawer-item.ativo {
+            background: rgba(139,92,246,0.15);
+            color: var(--primary); font-weight: 600;
+            border: 1px solid rgba(139,92,246,0.2);
+        }
+        .drawer-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── SETTINGS PANEL ── */
+        .settings-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.6); z-index: 300; backdrop-filter: blur(4px);
+            align-items: flex-end; justify-content: center;
+        }
+        .settings-overlay.open { display: flex; }
+        .settings-sheet {
+            background: rgba(12,6,50,0.95); backdrop-filter: blur(24px);
+            border: 1px solid var(--border); border-bottom: none;
+            border-radius: 24px 24px 0 0;
+            width: 100%; max-width: 480px; padding: 12px 24px 40px;
+            animation: slideUp .25s ease-out;
+            box-shadow: 0 -8px 40px rgba(139,92,246,0.15);
+        }
+        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+        .sheet-title { font-size: 17px; font-weight: 800; margin-bottom: 20px; color: var(--text); }
+        .settings-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 0; border-bottom: 1px solid var(--border);
+        }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-row-left { display: flex; flex-direction: column; gap: 2px; }
+        .settings-row-left span { font-size: 14px; font-weight: 600; color: var(--text); }
+        .settings-row-left small { font-size: 12px; color: var(--muted); }
+        .settings-badge {
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+            background: rgba(139,92,246,0.15); color: var(--primary);
+            border: 1px solid rgba(139,92,246,0.25);
+        }
+        .settings-danger-btn {
+            width: 100%; margin-top: 24px; padding: 13px;
+            background: rgba(239,68,68,0.1);
+            color: #f87171; border: 1px solid rgba(239,68,68,0.25);
+            border-radius: var(--radius-sm);
+            font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+            transition: background .2s;
+        }
+        .settings-danger-btn:hover { background: rgba(239,68,68,0.2); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .mobile-topbar { display: flex; }
+            .content-area { padding-top: 56px; }
+            .dashboard { padding: 20px 16px; }
+            .dashboard-greeting h1 { font-size: 22px; }
+            .welcome-body { padding: 20px 20px 28px; }
+            .welcome-header { padding: 28px 24px 28px; }
+            .welcome-header h1 { font-size: 22px; }
+        }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar-wrap {
+            margin: 20px 0 4px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            backdrop-filter: blur(8px);
+        }
+        .progress-bar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--muted);
+        }
+        .progress-count {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            color: var(--primary); font-weight: 700;
+        }
+        .progress-track {
+            height: 6px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+            box-shadow: 0 0 12px var(--glow-p);
+            transition: width .6s cubic-bezier(.4,0,.2,1);
+        }
+
+        /* ── PHASE DONE STATE ── */
+        .phase-card.phase-done { border-color: rgba(255,255,255,0.12); }
+        .phase-card.phase-done .phase-accent-bar { opacity: 1; height: 4px; }
+
+        /* ── NAV CHECK ── */
+        .nav-check {
+            margin-left: auto; font-size: 11px; font-weight: 800;
+            color: var(--primary); text-shadow: 0 0 10px var(--glow-p);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── CELEBRATION ── */
+        .celebracao-wrap {
+            position: relative; min-height: 100%; display: flex;
+            align-items: center; justify-content: center;
+            padding: 40px 20px; overflow: hidden;
+        }
+        .celeb-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+        @keyframes floatParticle {
+            0%   { transform: translateY(0) scale(1); opacity: var(--op, 0.6); }
+            50%  { transform: translateY(-60px) scale(1.2); opacity: calc(var(--op, 0.6) * 1.3); }
+            100% { transform: translateY(0) scale(1); opacity: var(--op, 0.6); }
+        }
+        .particle {
+            position: absolute; border-radius: 50%;
+            animation: floatParticle linear infinite;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .celeb-card {
+            position: relative; max-width: 560px; width: 100%;
+            background: rgba(8,4,32,0.85); border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 24px; padding: 40px 36px 36px;
+            backdrop-filter: blur(20px); text-align: center;
+            box-shadow: 0 0 60px rgba(139,92,246,0.2), 0 0 120px rgba(139,92,246,0.08);
+            animation: cardEntrance .5s cubic-bezier(.2,.8,.4,1) both;
+        }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: scale(.92) translateY(24px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .celeb-glow-ring {
+            position: absolute; inset: -1px; border-radius: 24px; pointer-events: none;
+            background: linear-gradient(135deg, rgba(139,92,246,0.4), rgba(34,211,238,0.4), rgba(168,85,247,0.4));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            padding: 1px; animation: ringRotate 4s linear infinite;
+        }
+        @keyframes ringRotate {
+            0%   { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        .celeb-trophy {
+            font-size: 72px; margin-bottom: 12px;
+            animation: trophyBounce 1s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(251,191,36,0.6));
+        }
+        @keyframes trophyBounce {
+            from { transform: scale(1) translateY(0); }
+            to   { transform: scale(1.08) translateY(-6px); }
+        }
+        .celeb-title {
+            font-size: 32px; font-weight: 900; margin: 0 0 8px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: -.02em;
+        }
+        .celeb-sub { color: var(--muted); font-size: 15px; margin: 0 0 28px; }
+
+        /* ── CERTIFICADO ── */
+        .certificado {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 16px; padding: 24px; margin-bottom: 28px; text-align: center;
+        }
+        .cert-top { margin-bottom: 16px; }
+        .cert-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+            color: var(--primary); letter-spacing: .12em; text-transform: uppercase;
+        }
+        .cert-text { color: var(--muted); font-size: 13px; margin: 8px 0 4px; }
+        .cert-nome {
+            font-size: 26px; font-weight: 900; color: var(--text);
+            text-shadow: 0 0 20px rgba(139,92,246,0.5);
+            margin: 6px 0 10px; letter-spacing: -.01em;
+        }
+        .cert-trilha {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            color: var(--cyan); margin: 6px 0 18px; line-height: 1.6;
+        }
+        .cert-fases {
+            display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px;
+        }
+        .cert-fase {
+            font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+            border: 1px solid; font-family: 'JetBrains Mono', monospace; letter-spacing: .05em;
+        }
+        .cert-data { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+        .celeb-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .celeb-btn-secondary {
+            padding: 12px 24px; border-radius: 10px; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05); color: var(--muted); cursor: pointer;
+            font-size: 14px; font-weight: 600; transition: all .2s;
+        }
+        .celeb-btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo" onclick="irParaHome()">
+            <div class="logo-icon">⚡</div>
+            <span class="logo-text">PyBlocks</span>
+        </div>
+        <p class="nav-section-label">Trilha</p>
+        <ul class="nav-items">
+            <li class="nav-item ativo" id="menu-home" onclick="irParaHome()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Início
+            </li>
+            <li class="nav-item" id="menu-fase1" onclick="carregarFase(1)">
+                <div class="nav-dot" style="background:#34d399;box-shadow:0 0 6px #34d39980"></div>
+                Lógica Visual
+            </li>
+            <li class="nav-item" id="menu-fase2" onclick="carregarFase(2)">
+                <div class="nav-dot" style="background:#22d3ee;box-shadow:0 0 6px #22d3ee80"></div>
+                Blocos Python
+            </li>
+            <li class="nav-item" id="menu-fase3" onclick="carregarFase(3)">
+                <div class="nav-dot" style="background:#a855f7;box-shadow:0 0 6px #a855f780"></div>
+                Código Textual
+            </li>
+        </ul>
+    </nav>
+
+    <!-- MOBILE TOP BAR -->
+    <header class="mobile-topbar" id="mobile-topbar">
+        <button class="topbar-btn" onclick="abrirDrawer()" aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+        <div class="topbar-logo" onclick="irParaHome()">
+            <div class="topbar-logo-icon">⚡</div>
+            <span class="topbar-logo-text">PyBlocks</span>
+        </div>
+        <button class="topbar-btn" onclick="abrirSettings()" aria-label="Configurações">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>
+    </header>
+
+    <div class="drawer-overlay" id="drawer-overlay" onclick="fecharDrawer()"></div>
+
+    <nav class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-logo-icon">⚡</div>
+            <span class="drawer-logo-text">PyBlocks</span>
+        </div>
+        <div class="drawer-nav">
+            <p class="drawer-section-label">Trilha</p>
+            <div class="drawer-item ativo" id="drawer-home" onclick="irParaHome(); fecharDrawer()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Início
+            </div>
+            <div class="drawer-item" id="drawer-fase1" onclick="carregarFase(1); fecharDrawer()">
+                <div class="drawer-dot" style="background:#34d399;box-shadow:0 0 6px #34d39980"></div>
+                Lógica Visual
+            </div>
+            <div class="drawer-item" id="drawer-fase2" onclick="carregarFase(2); fecharDrawer()">
+                <div class="drawer-dot" style="background:#22d3ee;box-shadow:0 0 6px #22d3ee80"></div>
+                Blocos Python
+            </div>
+            <div class="drawer-item" id="drawer-fase3" onclick="carregarFase(3); fecharDrawer()">
+                <div class="drawer-dot" style="background:#a855f7;box-shadow:0 0 6px #a855f780"></div>
+                Código Textual
+            </div>
+        </div>
+    </nav>
+
+    <div class="settings-overlay" id="settings-overlay" onclick="fecharSettings()">
+        <div class="settings-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <p class="sheet-title">⚙ Configurações</p>
+            <div class="settings-row">
+                <div class="settings-row-left">
+                    <span>Utilizador</span>
+                    <small id="settings-nome">—</small>
+                </div>
+                <span class="settings-badge">Activo</span>
+            </div>
+            <div class="settings-row">
+                <div class="settings-row-left">
+                    <span>Versão</span>
+                    <small>PyBlocks v1.0</small>
+                </div>
+                <span style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace">v1.0</span>
+            </div>
+            <button class="settings-danger-btn" onclick="sairDaConta()">⊗ Sair da conta</button>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="content-area" id="content-area">
+            <div class="welcome-wrap" id="tela-boas-vindas">
+                <div class="welcome-card">
+                    <div class="welcome-header">
+                        <span class="welcome-emoji">⚡</span>
+                        <h1>Aprenda a programar.<br><span>Transforme o mundo.</span></h1>
+                    </div>
+                    <div class="welcome-body">
+                        <p>Bem-vindo ao PyBlocks! Resolve desafios ambientais reais enquanto dominas a lógica de programação com Python.</p>
+                        <div class="input-wrap">
+                            <label for="username">Como te chamamos?</label>
+                            <input class="input-field" type="text" id="username" placeholder="Digita o teu nome..." autocomplete="off">
+                        </div>
+                        <button class="btn-primary" onclick="salvarPerfil()">Entrar no Dashboard →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function abrirDrawer() {
+            document.getElementById('drawer').classList.add('open');
+            document.getElementById('drawer-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function fecharDrawer() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('drawer-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function abrirSettings() {
+            const u = localStorage.getItem('@pyblocks_usuario');
+            const nome = u ? JSON.parse(u).nome : '—';
+            document.getElementById('settings-nome').textContent = nome;
+            document.getElementById('settings-overlay').classList.add('open');
+        }
+        function fecharSettings() { document.getElementById('settings-overlay').classList.remove('open'); }
+        function sairDaConta() {
+            localStorage.removeItem('@pyblocks_usuario');
+            fecharSettings();
+            location.reload();
+        }
+
+        function salvarPerfil() {
+            const nome = document.getElementById('username').value.trim();
+            if (!nome) { document.getElementById('username').focus(); return; }
+            localStorage.setItem('@pyblocks_usuario', JSON.stringify({ nome }));
+            carregarDashboard({ nome });
+        }
+
+        function carregarDashboard(u) {
+            ativarMenu('menu-home', 'drawer-home');
+            const c1 = faseCompleta(1), c2 = faseCompleta(2), c3 = faseCompleta(3);
+            const totalCompletas = [c1,c2,c3].filter(Boolean).length;
+            const pct = Math.round((totalCompletas / 3) * 100);
+
+            function badgeHTML(ok, cor) {
+                return ok ? `<span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:rgba(${cor},0.15);color:rgb(${cor});border:1px solid rgba(${cor},0.35);letter-spacing:.06em;font-family:'JetBrains Mono',monospace;box-shadow:0 0 12px rgba(${cor},0.3)">✓ CONCLUÍDA</span>` : '';
+            }
+            function btnLabel(ok) { return ok ? 'Rever →' : 'Iniciar →'; }
+
+            const area = document.getElementById('content-area');
+            area.innerHTML = `
+                <div class="dashboard">
+                    <div class="dashboard-greeting">
+                        <h1>Olá, <span>${u.nome}</span> 👾</h1>
+                        <p>Escolhe uma fase e começa a programar.</p>
+                    </div>
+
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-header">
+                            <span>Progresso da Trilha</span>
+                            <span class="progress-count">${totalCompletas}/3 fases</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+
+                    <p class="trilha-label">Trilha de Aprendizagem</p>
+                    <div class="phases-grid">
+                        <div class="phase-card ${c1?'phase-done':''}" onclick="carregarFase(1)">
+                            <div class="phase-accent-bar" style="background:linear-gradient(90deg,#10b981,#34d399)"></div>
+                            <div class="phase-card-top">
+                                <div class="phase-icon" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,${c1?'0.6':'0.25'});box-shadow:0 0 ${c1?'24':'16'}px rgba(52,211,153,${c1?'0.35':'0.15'})">🌿</div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                                    <span class="phase-num">Fase 01</span>
+                                    ${badgeHTML(c1, '52,211,153')}
+                                </div>
+                            </div>
+                            <div class="phase-card-body">
+                                <h3>Lógica Visual</h3>
+                                <p>Monta um fluxograma arrastando blocos. Aprende a pensar algoritmicamente.</p>
+                                <button class="phase-btn" style="background:linear-gradient(135deg,#059669,#34d399);box-shadow:0 4px 16px rgba(52,211,153,0.35)">${btnLabel(c1)}</button>
+                            </div>
+                        </div>
+                        <div class="phase-card ${c2?'phase-done':''}" onclick="carregarFase(2)">
+                            <div class="phase-accent-bar" style="background:linear-gradient(90deg,#0891b2,#22d3ee)"></div>
+                            <div class="phase-card-top">
+                                <div class="phase-icon" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,${c2?'0.6':'0.25'});box-shadow:0 0 ${c2?'24':'16'}px rgba(34,211,238,${c2?'0.35':'0.15'})">🧩</div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                                    <span class="phase-num">Fase 02</span>
+                                    ${badgeHTML(c2, '34,211,238')}
+                                </div>
+                            </div>
+                            <div class="phase-card-body">
+                                <h3>Blocos Python</h3>
+                                <p>Ordena blocos de código Python reais. Descobre a sintaxe e a indentação.</p>
+                                <button class="phase-btn" style="background:linear-gradient(135deg,#0891b2,#22d3ee);box-shadow:0 4px 16px rgba(34,211,238,0.35)">${btnLabel(c2)}</button>
+                            </div>
+                        </div>
+                        <div class="phase-card ${c3?'phase-done':''}" onclick="carregarFase(3)">
+                            <div class="phase-accent-bar" style="background:linear-gradient(90deg,#7c3aed,#a855f7)"></div>
+                            <div class="phase-card-top">
+                                <div class="phase-icon" style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,${c3?'0.6':'0.25'});box-shadow:0 0 ${c3?'24':'16'}px rgba(168,85,247,${c3?'0.35':'0.15'})">⌨️</div>
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                                    <span class="phase-num">Fase 03</span>
+                                    ${badgeHTML(c3, '168,85,247')}
+                                </div>
+                            </div>
+                            <div class="phase-card-body">
+                                <h3>Código Textual</h3>
+                                <p>Escreve código Python real num editor com consola. O desafio final!</p>
+                                <button class="phase-btn" style="background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 4px 16px rgba(168,85,247,0.35)">${btnLabel(c3)}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            atualizarNavProgress();
+        }
+
+        function carregarFase(num) {
+            if (!localStorage.getItem('@pyblocks_usuario')) { irParaHome(); return; }
+            ativarMenu('menu-fase' + num, 'drawer-fase' + num);
+            const area = document.getElementById('content-area');
+            area.innerHTML = `<iframe src="fase${num}.html" class="phase-iframe"></iframe>`;
+        }
+
+        function irParaHome() {
+            const u = localStorage.getItem('@pyblocks_usuario');
+            if (u) carregarDashboard(JSON.parse(u));
+            else location.reload();
+        }
+
+        function ativarMenu(idSidebar, idDrawer) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('ativo'));
+            document.querySelectorAll('.drawer-item').forEach(el => el.classList.remove('ativo'));
+            const s = document.getElementById(idSidebar);
+            const d = document.getElementById(idDrawer);
+            if (s) s.classList.add('ativo');
+            if (d) d.classList.add('ativo');
+        }
+
+        function faseCompleta(n) {
+            return localStorage.getItem('@pyblocks_fase' + n + '_completa') === 'true';
+        }
+
+        function atualizarNavProgress() {
+            [1,2,3].forEach(n => {
+                const ok = faseCompleta(n);
+                const s = document.getElementById('menu-fase' + n);
+                const d = document.getElementById('drawer-fase' + n);
+                [s, d].forEach(el => {
+                    if (!el) return;
+                    const existing = el.querySelector('.nav-check');
+                    if (ok && !existing) {
+                        const chk = document.createElement('span');
+                        chk.className = 'nav-check';
+                        chk.textContent = '✓';
+                        el.appendChild(chk);
+                    }
+                });
+            });
+        }
+
+        window.addEventListener('message', e => {
+            if (!e.data) return;
+            if (e.data.type === 'fase_completa') {
+                localStorage.setItem('@pyblocks_fase' + e.data.fase + '_completa', 'true');
+                atualizarNavProgress();
+                const u = localStorage.getItem('@pyblocks_usuario');
+                if (u) carregarDashboard(JSON.parse(u));
+            }
+            if (e.data.type === 'proxima_fase') {
+                const prox = e.data.atual + 1;
+                if (prox <= 3) {
+                    carregarFase(prox);
+                } else {
+                    mostrarCelebracao();
+                }
+            }
+        });
+
+        function mostrarCelebracao() {
+            ativarMenu('menu-home', 'drawer-home');
+            const u = localStorage.getItem('@pyblocks_usuario');
+            const nome = u ? JSON.parse(u).nome : 'Programador';
+            const data = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+            const area = document.getElementById('content-area');
+            area.innerHTML = `
+                <div class="celebracao-wrap" id="celebracao-wrap">
+                    <div class="celeb-particles" id="celeb-particles"></div>
+                    <div class="celeb-card">
+                        <div class="celeb-glow-ring"></div>
+                        <div class="celeb-trophy">🏆</div>
+                        <h1 class="celeb-title">Trilha Concluída!</h1>
+                        <p class="celeb-sub">Completaste as 3 fases do PyBlocks</p>
+                        <div class="certificado">
+                            <div class="cert-top">
+                                <span class="cert-label">// CERTIFICADO DE CONCLUSÃO</span>
+                            </div>
+                            <p class="cert-text">Certifica-se que</p>
+                            <div class="cert-nome">${nome}</div>
+                            <p class="cert-text">concluiu com êxito a trilha</p>
+                            <div class="cert-trilha">PyBlocks — Ambiente Progressivo<br>para Ensino de Programação com Python</div>
+                            <div class="cert-fases">
+                                <span class="cert-fase" style="color:#34d399;border-color:rgba(52,211,153,0.3)">✓ Lógica Visual</span>
+                                <span class="cert-fase" style="color:#22d3ee;border-color:rgba(34,211,238,0.3)">✓ Blocos Python</span>
+                                <span class="cert-fase" style="color:#a855f7;border-color:rgba(168,85,247,0.3)">✓ Código Real</span>
+                            </div>
+                            <div class="cert-data">${data}</div>
+                        </div>
+                        <div class="celeb-btns">
+                            <button class="celeb-btn-secondary" onclick="irParaHome()">← Voltar ao Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            gerarParticulas();
+        }
+
+        function gerarParticulas() {
+            const container = document.getElementById('celeb-particles');
+            if (!container) return;
+            const cores = ['#8b5cf6','#22d3ee','#f472b6','#34d399','#fbbf24'];
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.cssText = `
+                    left:${Math.random()*100}%;
+                    top:${Math.random()*100}%;
+                    background:${cores[Math.floor(Math.random()*cores.length)]};
+                    width:${3+Math.random()*5}px;
+                    height:${3+Math.random()*5}px;
+                    animation-delay:${Math.random()*3}s;
+                    animation-duration:${3+Math.random()*4}s;
+                    opacity:${0.3+Math.random()*0.7};
+                `;
+                container.appendChild(p);
+            }
+        }
+
+        function irParaHome() {
+            const u = localStorage.getItem('@pyblocks_usuario');
+            if (u) carregarDashboard(JSON.parse(u));
+        }
+
+        document.getElementById('username')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') salvarPerfil();
+        });
+
+        (function init() {
+            const u = localStorage.getItem('@pyblocks_usuario');
+            if (u) carregarDashboard(JSON.parse(u));
+        })();
+    </script>
+</body>
+</html>

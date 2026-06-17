@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PyBlocks – Fase 3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #080420;
+            --card:    rgba(255,255,255,0.04);
+            --primary: #a855f7;
+            --p2:      #7c3aed;
+            --glow:    rgba(168,85,247,0.35);
+            --cyan:    #22d3ee;
+            --pink:    #f472b6;
+            --text:    #f1f5f9;
+            --muted:   #a5b4fc;
+            --border:  rgba(168,85,247,0.2);
+            --radius:  16px;
+            --editor-bg:  #020714;
+            --console-bg: #010510;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg); color: var(--text);
+            height: 100dvh; display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 60% at 10% 20%, rgba(168,85,247,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 50% at 90% 80%, rgba(34,211,238,0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px);
+            background-size: 50px 50px; pointer-events: none;
+        }
+        body > * { position: relative; z-index: 1; }
+
+        .tab-bar { display: none; background: rgba(8,4,32,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .tabs { display: flex; }
+        .tab { flex: 1; min-width: 90px; padding: 14px 12px; text-align: center; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+        .tab.ativo { color: var(--primary); border-color: var(--primary); text-shadow: 0 0 12px var(--glow); }
+
+        .layout { flex: 1; display: flex; overflow: hidden; }
+        .panel { display: flex; flex-direction: column; overflow-y: auto; }
+
+        /* DESAFIO */
+        .panel-desafio {
+            width: 280px; flex-shrink: 0;
+            background: rgba(8,4,32,0.7); backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border);
+            padding: 24px; gap: 14px;
+        }
+        .fase-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(168,85,247,0.1); color: var(--primary);
+            border: 1px solid rgba(168,85,247,0.25);
+            font-size: 11px; font-weight: 700; padding: 4px 10px;
+            border-radius: 20px; text-transform: uppercase; letter-spacing: .08em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .panel-desafio h2 { font-size: 18px; font-weight: 800; }
+        .cenario-box { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2); border-radius: 12px; padding: 14px; }
+        .cenario-box p { font-size: 13px; line-height: 1.6; }
+        .cenario-box strong { color: var(--primary); }
+        .instrucao { font-size: 13px; line-height: 1.65; color: var(--muted); }
+
+        .ref-box { background: var(--editor-bg); border-radius: 12px; padding: 14px; margin-top: auto; border: 1px solid rgba(168,85,247,0.15); }
+        .ref-box h4 { color: var(--muted); font-size: 11px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .08em; font-family: 'JetBrains Mono', monospace; }
+        .ref-line { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.9; color: #64748b; }
+        .ref-kw  { color: #c084fc; }
+        .ref-var { color: #60a5fa; }
+        .ref-str { color: #86efac; }
+        .ref-num { color: #fbbf24; }
+        .ref-fn  { color: #f472b6; }
+
+        /* EDITOR */
+        .panel-editor { flex: 1; background: transparent; padding: 24px; gap: 16px; }
+        .editor-wrap { flex: 1; display: flex; flex-direction: column; background: var(--editor-bg); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 30px rgba(0,0,0,.6), 0 0 0 1px rgba(168,85,247,0.15); min-height: 0; }
+        .editor-topbar { background: #0a0520; padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(168,85,247,0.1); flex-shrink: 0; }
+        .traffic-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .editor-filename { margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: rgba(168,85,247,0.5); }
+        .code-area { flex: 1; display: flex; min-height: 0; }
+        .line-numbers { padding: 16px 12px; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.75; color: rgba(168,85,247,0.25); user-select: none; text-align: right; border-right: 1px solid rgba(168,85,247,0.08); min-width: 44px; flex-shrink: 0; }
+        .code-textarea { flex: 1; background: transparent; border: none; outline: none; resize: none; padding: 16px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.75; color: #e2e8f0; tab-size: 4; caret-color: #a855f7; }
+        .code-textarea::placeholder { color: rgba(168,85,247,0.2); }
+
+        /* CONSOLE */
+        .console-wrap { background: var(--console-bg); border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(168,85,247,0.1); }
+        .console-topbar { background: #050215; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(168,85,247,0.08); }
+        .console-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #a855f7; text-transform: uppercase; letter-spacing: .1em; }
+        .console-clear { font-size: 11px; color: rgba(165,180,252,0.4); cursor: pointer; font-weight: 600; background: none; border: none; font-family: inherit; }
+        .console-clear:hover { color: var(--muted); }
+        .console-output { padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: rgba(165,180,252,0.5); height: 130px; overflow-y: auto; }
+        .console-output .line-ok    { color: #4ade80; }
+        .console-output .line-warn  { color: #fb923c; }
+        .console-output .line-err   { color: #f87171; }
+        .console-output .line-info  { color: #60a5fa; }
+        .console-output .line-muted { color: rgba(165,180,252,0.35); }
+
+        .btn-executar { width: 100%; padding: 15px; background: linear-gradient(135deg,var(--p2),var(--primary)); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; font-family: inherit; cursor: pointer; box-shadow: 0 4px 20px var(--glow); flex-shrink: 0; transition: box-shadow .2s,transform .1s; letter-spacing: .02em; }
+        .btn-executar:hover { box-shadow: 0 6px 30px var(--glow); }
+        .btn-executar:active { transform: scale(.98); }
+
+        /* RESULT MODAL */
+        .result-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(10px); z-index: 400; align-items: center; justify-content: center; padding: 24px; }
+        .result-overlay.show { display: flex; }
+        .result-card { background: rgba(10,5,40,0.95); backdrop-filter: blur(24px); border: 1px solid rgba(168,85,247,0.2); border-radius: 24px; padding: 40px 32px; text-align: center; max-width: 380px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.5),0 0 40px rgba(168,85,247,0.1); animation: popIn .3s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes popIn { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .result-icon { font-size: 60px; margin-bottom: 16px; display: block; }
+        .result-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 12px; color: var(--text); }
+        .result-card p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+        .result-btn { padding: 14px 36px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; color: white; background: linear-gradient(135deg,var(--p2),var(--primary)); box-shadow: 0 4px 16px var(--glow); }
+
+        /* FLOATING IA */
+        .ia-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg,var(--p2),var(--primary)); border: none; cursor: pointer; box-shadow: 0 4px 20px var(--glow),0 0 0 1px rgba(168,85,247,.2); z-index: 300; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform .2s,box-shadow .2s; }
+        .ia-fab:hover { transform: scale(1.1); box-shadow: 0 6px 30px var(--glow); }
+        .ia-fab:active { transform: scale(.94); }
+        .ia-fab-badge { position: absolute; top: 2px; right: 2px; width: 13px; height: 13px; background: #f472b6; border-radius: 50%; border: 2px solid var(--bg); box-shadow: 0 0 8px rgba(244,114,182,.6); }
+
+        .ia-chat { position: fixed; bottom: 92px; right: 24px; width: 320px; height: 420px; background: rgba(10,5,40,0.96); backdrop-filter: blur(24px); border: 1px solid rgba(168,85,247,.2); border-radius: 20px; box-shadow: 0 12px 48px rgba(0,0,0,.6),0 0 40px rgba(168,85,247,.08); z-index: 299; display: flex; flex-direction: column; overflow: hidden; transform: scale(.88) translateY(24px); opacity: 0; pointer-events: none; transition: transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s; transform-origin: bottom right; }
+        .ia-chat.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+        .ia-chat-header { background: linear-gradient(135deg,#4c1d95,#7c3aed); border-bottom: 1px solid rgba(168,85,247,.2); padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .ia-chat-avatar { width: 36px; height: 36px; background: rgba(255,255,255,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .ia-chat-info { flex: 1; }
+        .ia-chat-info strong { color: white; font-size: 14px; font-weight: 700; display: block; }
+        .ia-chat-info span { color: rgba(255,255,255,.7); font-size: 11px; }
+        .ia-chat-close { background: rgba(255,255,255,.15); border: none; border-radius: 50%; width: 30px; height: 30px; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .ia-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .ia-messages::-webkit-scrollbar { width: 3px; }
+        .ia-messages::-webkit-scrollbar-thumb { background: rgba(168,85,247,.3); border-radius: 4px; }
+        .msg { max-width: 88%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+        .msg-bot { background: rgba(255,255,255,0.06); color: var(--text); border-bottom-left-radius: 4px; align-self: flex-start; border: 1px solid rgba(168,85,247,0.1); }
+        .msg-user { background: linear-gradient(135deg,#4c1d95,#7c3aed); color: white; border-bottom-right-radius: 4px; align-self: flex-end; }
+        .msg-typing { background: rgba(255,255,255,.05); color: var(--muted); border-bottom-left-radius: 4px; align-self: flex-start; font-style: italic; }
+        .ia-input-area { border-top: 1px solid rgba(168,85,247,.1); padding: 10px 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+        .ia-chat-input { flex: 1; padding: 9px 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(168,85,247,.15); border-radius: 20px; font-size: 13px; font-family: inherit; outline: none; color: var(--text); }
+        .ia-chat-input:focus { border-color: rgba(168,85,247,.4); }
+        .ia-chat-input::placeholder { color: rgba(165,180,252,.3); }
+        .ia-send-btn { width: 36px; height: 36px; flex-shrink: 0; background: linear-gradient(135deg,var(--p2),var(--primary)); border: none; border-radius: 50%; color: white; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,.2); border-radius: 4px; }
+
+        @media (max-width: 768px) {
+            .tab-bar { display: block; }
+            .panel-desafio { display: none; width: 100%; border: none; }
+            .panel-editor { padding: 12px; gap: 10px; }
+            .panel.ativo { display: flex; }
+            .code-textarea { font-size: 12px; }
+            .console-output { height: 100px; font-size: 11.5px; }
+            .ia-chat { width: calc(100vw - 32px); right: 16px; bottom: 88px; }
+            .ia-fab { bottom: 20px; right: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tab-bar">
+        <div class="tabs">
+            <div class="tab" id="tab-desafio" onclick="mudarTab('desafio')">📋 Desafio</div>
+            <div class="tab ativo" id="tab-editor" onclick="mudarTab('editor')">⌨️ Editor</div>
+        </div>
+    </div>
+
+    <div class="layout">
+        <section class="panel panel-desafio" id="panel-desafio">
+            <div class="fase-badge">⚡ Fase 03 — Final</div>
+            <h2>Código Textual 🖥️</h2>
+            <div class="cenario-box">
+                <p><strong>Desafio Final:</strong> Escreve o script completo em Python para resolver o problema do vazamento.</p>
+            </div>
+            <p class="instrucao">Digita as linhas de código aprendidas nas fases anteriores.<br><br>Simula <strong>10 minutos</strong> — o sistema valida a sintaxe e a lógica.</p>
+            <div class="ref-box">
+                <h4>// referência rápida</h4>
+                <div class="ref-line"><span class="ref-var">minutos</span> = <span class="ref-fn">int</span>(<span class="ref-fn">input</span>())</div>
+                <div class="ref-line"><span class="ref-var">desperdicio</span> = <span class="ref-var">minutos</span> * <span class="ref-num">15</span></div>
+                <div class="ref-line"><span class="ref-kw">if</span> <span class="ref-var">desperdicio</span> &gt; <span class="ref-num">100</span>:</div>
+                <div class="ref-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="ref-fn">print</span>(<span class="ref-str">"Alerta Crítico!"</span>)</div>
+            </div>
+        </section>
+
+        <section class="panel panel-editor ativo" id="panel-editor">
+            <div class="editor-wrap">
+                <div class="editor-topbar">
+                    <div class="traffic-dot" style="background:#ff5f57"></div>
+                    <div class="traffic-dot" style="background:#febc2e"></div>
+                    <div class="traffic-dot" style="background:#28c840"></div>
+                    <span class="editor-filename">vazamento.py</span>
+                </div>
+                <div class="code-area">
+                    <div class="line-numbers" id="line-numbers">1</div>
+                    <textarea class="code-textarea" id="editor-txt"
+                        spellcheck="false"
+                        placeholder="# Escreve o teu código Python aqui..."
+                        oninput="atualizarLinhas(this)"></textarea>
+                </div>
+            </div>
+
+            <div class="console-wrap">
+                <div class="console-topbar">
+                    <span class="console-label">▶ Console</span>
+                    <button class="console-clear" onclick="limparConsole()">limpar</button>
+                </div>
+                <div class="console-output" id="console-output">
+                    <span class="line-muted">> Aguardando execução do script...</span>
+                </div>
+            </div>
+
+            <button class="btn-executar" onclick="executarCodigo()">▶ Executar Script Python</button>
+        </section>
+    </div>
+
+    <div class="result-overlay" id="result-overlay">
+        <div class="result-card">
+            <span class="result-icon" id="result-icon">🎉</span>
+            <h3 id="result-title"></h3>
+            <p id="result-msg"></p>
+            <button class="result-btn" onclick="fecharModal()">Fechar</button>
+        </div>
+    </div>
+
+    <button class="ia-fab" onclick="toggleIA()" title="IA Assistente">
+        🤖<span class="ia-fab-badge" id="ia-badge"></span>
+    </button>
+    <div class="ia-chat" id="ia-chat">
+        <div class="ia-chat-header">
+            <div class="ia-chat-avatar">🤖</div>
+            <div class="ia-chat-info">
+                <strong>IA Assistente</strong>
+                <span>Fase 3 · Código Real</span>
+            </div>
+            <button class="ia-chat-close" onclick="toggleIA()">×</button>
+        </div>
+        <div class="ia-messages" id="ia-messages">
+            <div class="msg msg-bot">Olá! Sou a tua assistente para a Fase Final. Pergunta-me sobre a sintaxe Python! 🖥️</div>
+        </div>
+        <div class="ia-input-area">
+            <input class="ia-chat-input" id="ia-input" type="text" placeholder="Pergunta algo..." onkeydown="if(event.key==='Enter') enviarMensagem()">
+            <button class="ia-send-btn" onclick="enviarMensagem()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        function mudarTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('ativo'));
+            document.getElementById('tab-' + tab).classList.add('ativo');
+            document.getElementById('panel-' + tab).classList.add('ativo');
+        }
+        function atualizarLinhas(ta) {
+            const linhas = ta.value.split('\n').length;
+            document.getElementById('line-numbers').innerHTML = Array.from({length:linhas},(_,i)=>i+1).join('<br>');
+        }
+        document.getElementById('editor-txt').addEventListener('keydown', e => {
+            if (e.key === 'Tab') { e.preventDefault(); const ta=e.target,s=ta.selectionStart,en=ta.selectionEnd; ta.value=ta.value.substring(0,s)+'    '+ta.value.substring(en); ta.selectionStart=ta.selectionEnd=s+4; atualizarLinhas(ta); }
+        });
+        function limparConsole() { document.getElementById('console-output').innerHTML='<span class="line-muted">> Console limpo.</span>'; }
+        function log(html) { const c=document.getElementById('console-output'); c.innerHTML+=html+'<br>'; c.scrollTop=c.scrollHeight; }
+        function executarCodigo() {
+            const codigo = document.getElementById('editor-txt').value;
+            document.getElementById('console-output').innerHTML = '';
+            const linhas = codigo.split('\n').map(l => l.trim().replace(/\s+/g,''));
+            const temInput    = linhas.some(l => l.includes('minutos=int(input('));
+            const temCalculo  = linhas.some(l => l.includes('desperdicio=minutos*15'));
+            const temCondicao = linhas.some(l => l.includes('ifdesperdicio>100:'));
+            const temPrint    = linhas.some(l => l.includes('print('));
+            if (!temInput||!temCalculo||!temCondicao||!temPrint) {
+                log('<span class="line-err">SyntaxError: Comando ausente ou incorreto.</span>');
+                log('<span class="line-muted">Verifica: int(input()), cálculo ×15, if >100: e print.</span>');
+                setTimeout(() => mostrarModal(false,"Erro no script!","Algum comando está ausente. Consulta a referência rápida no painel Desafio."), 600);
+                return;
+            }
+            log('<span class="line-info">> Iniciando: vazamento.py</span>');
+            setTimeout(()=>{ log('<span class="line-muted">[INPUT]   simulando → minutos = 10</span>');
+            setTimeout(()=>{ log('<span class="line-muted">[PROCESS] 10 × 15 = 150 litros</span>');
+            setTimeout(()=>{ log('<span class="line-warn">[OUTPUT]  Alerta Crítico!</span>');
+            setTimeout(()=>{ log('<span class="line-ok">✔ Script executado! Trilha concluída! 🎉</span>');
+            setTimeout(()=>mostrarModal(true,"Trilha concluída! 🏆","Passaste pelas 3 fases: Lógica Visual → Blocos Python → Código Real. Parabéns!"),400);
+            },400);},500);},500);},300);
+        }
+        function mostrarModal(ok, titulo, msg) {
+            document.getElementById('result-icon').textContent = ok?'🏆':'⚠️';
+            document.getElementById('result-title').textContent = titulo;
+            document.getElementById('result-msg').textContent = msg;
+            const btn = document.querySelector('.result-btn');
+            if (ok) {
+                btn.textContent = 'Ver Certificado 🏆';
+                btn.onclick = () => {
+                    fecharModal();
+                    try { window.parent.postMessage({ type: 'proxima_fase', atual: 3 }, '*'); } catch(e) {}
+                };
+                localStorage.setItem('@pyblocks_fase3_completa', 'true');
+                try { window.parent.postMessage({ type: 'fase_completa', fase: 3 }, '*'); } catch(e) {}
+            } else {
+                btn.textContent = 'Tentar novamente';
+                btn.onclick = fecharModal;
+            }
+            document.getElementById('result-overlay').classList.add('show');
+        }
+        function fecharModal() { document.getElementById('result-overlay').classList.remove('show'); }
+        function toggleIA() { const chat=document.getElementById('ia-chat'); const badge=document.getElementById('ia-badge'); chat.classList.toggle('open'); if(badge)badge.style.display='none'; if(chat.classList.contains('open'))setTimeout(()=>document.getElementById('ia-input').focus(),250); }
+        function enviarMensagem() {
+            const input=document.getElementById('ia-input'),msgs=document.getElementById('ia-messages'),texto=input.value.trim();
+            if(!texto) return; input.value='';
+            const u=document.createElement('div'); u.className='msg msg-user'; u.textContent=texto; msgs.appendChild(u);
+            const t=document.createElement('div'); t.className='msg msg-typing'; t.textContent='A pensar...'; msgs.appendChild(t);
+            msgs.scrollTop=msgs.scrollHeight;
+            setTimeout(()=>{ t.remove(); const b=document.createElement('div'); b.className='msg msg-bot'; b.textContent=gerarResposta(texto.toLowerCase()); msgs.appendChild(b); msgs.scrollTop=msgs.scrollHeight; }, 850);
+        }
+        function gerarResposta(q) {
+            if(q.includes('input')||q.includes('ler')) return 'Para ler dados: minutos = int(input()). O int() converte o texto em número inteiro!';
+            if(q.includes('calculo')||q.includes('desperdicio')||q.includes('15')) return '"desperdicio = minutos * 15" calcula os litros perdidos. Armazena numa variável!';
+            if(q.includes('if')||q.includes('condição')||q.includes('100')) return '"if desperdicio > 100:" — não esqueças os dois pontos (:) no final!';
+            if(q.includes('print')||q.includes('output')) return '4 espaços antes de print("Alerta Crítico!"). Indentação obrigatória dentro do if!';
+            if(q.includes('erro')||q.includes('error')||q.includes('syntax')) return 'Verifica: 1) int(input()) 2) *15 3) if com ":" 4) print com 4 espaços. Nessa ordem!';
+            return 'Consulta a referência rápida no painel Desafio. Código Python: linha a linha, na ordem certa! 🖥️';
+        }
+    </script>
+</body>
+</html>
