@@ -788,7 +788,8 @@
                 localStorage.setItem('@pyblocks_fase' + e.data.fase + '_completa', 'true');
                 atualizarNavProgress();
                 const u = localStorage.getItem('@pyblocks_usuario');
-                if (u) carregarDashboard(JSON.parse(u));
+                const homeAtivo = document.getElementById('menu-home')?.classList.contains('ativo');
+                if (u && homeAtivo) carregarDashboard(JSON.parse(u));
             }
             if (e.data.type === 'proxima_fase') {
                 const prox = e.data.atual + 1;

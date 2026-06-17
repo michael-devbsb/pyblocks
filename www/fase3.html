@@ -299,10 +299,10 @@
                 btn.textContent = 'Ver Certificado 🏆';
                 btn.onclick = () => {
                     fecharModal();
+                    try { window.parent.postMessage({ type: 'fase_completa', fase: 3 }, '*'); } catch(e) {}
                     try { window.parent.postMessage({ type: 'proxima_fase', atual: 3 }, '*'); } catch(e) {}
                 };
                 localStorage.setItem('@pyblocks_fase3_completa', 'true');
-                try { window.parent.postMessage({ type: 'fase_completa', fase: 3 }, '*'); } catch(e) {}
             } else {
                 btn.textContent = 'Tentar novamente';
                 btn.onclick = fecharModal;

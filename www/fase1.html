@@ -445,10 +445,10 @@
                 btn.style.background = 'linear-gradient(135deg,#059669,#34d399)';
                 btn.onclick = () => {
                     fecharModal();
+                    try { window.parent.postMessage({ type: 'fase_completa', fase: 1 }, '*'); } catch(e) {}
                     try { window.parent.postMessage({ type: 'proxima_fase', atual: 1 }, '*'); } catch(e) {}
                 };
                 localStorage.setItem('@pyblocks_fase1_completa', 'true');
-                try { window.parent.postMessage({ type: 'fase_completa', fase: 1 }, '*'); } catch(e) {}
             } else {
                 btn.textContent = 'Tentar novamente';
                 btn.style.background = 'linear-gradient(135deg,#b45309,#f97316)';

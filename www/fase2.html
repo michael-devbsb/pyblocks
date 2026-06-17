@@ -330,10 +330,10 @@
                 btn.style.color = '#082f49';
                 btn.onclick = () => {
                     fecharModal();
+                    try { window.parent.postMessage({ type: 'fase_completa', fase: 2 }, '*'); } catch(e) {}
                     try { window.parent.postMessage({ type: 'proxima_fase', atual: 2 }, '*'); } catch(e) {}
                 };
                 localStorage.setItem('@pyblocks_fase2_completa', 'true');
-                try { window.parent.postMessage({ type: 'fase_completa', fase: 2 }, '*'); } catch(e) {}
             } else {
                 btn.textContent = 'Tentar novamente';
                 btn.style.background = 'linear-gradient(135deg,#b45309,#f97316)';
