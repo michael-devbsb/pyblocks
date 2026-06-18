@@ -179,9 +179,9 @@
             <div class="fase-badge">⚡ Fase 03 — Final</div>
             <h2>Código Textual 🖥️</h2>
             <div class="cenario-box">
-                <p><strong>Desafio Final:</strong> Escreve o script completo em Python para resolver o problema do vazamento.</p>
+                <p><strong>Desafio Final:</strong> Escreva o script completo em Python para resolver o problema do vazamento.</p>
             </div>
-            <p class="instrucao">Digita as linhas de código aprendidas nas fases anteriores.<br><br>Simula <strong>10 minutos</strong> — o sistema valida a sintaxe e a lógica.</p>
+            <p class="instrucao">Digita as linhas de código aprendidas nas fases anteriores.<br><br>Simule <strong>15 minutos</strong> — o sistema valida a sintaxe e a lógica.</p>
             <div class="ref-box">
                 <h4>// referência rápida</h4>
                 <div class="ref-line"><span class="ref-var">minutos</span> = <span class="ref-fn">int</span>(<span class="ref-fn">input</span>())</div>
@@ -203,7 +203,7 @@
                     <div class="line-numbers" id="line-numbers">1</div>
                     <textarea class="code-textarea" id="editor-txt"
                         spellcheck="false"
-                        placeholder="# Escreve o teu código Python aqui..."
+                        placeholder="# Escreva o seu código Python aqui..."
                         oninput="atualizarLinhas(this)"></textarea>
                 </div>
             </div>
@@ -244,10 +244,10 @@
             <button class="ia-chat-close" onclick="toggleIA()">×</button>
         </div>
         <div class="ia-messages" id="ia-messages">
-            <div class="msg msg-bot">Olá! Sou a tua assistente para a Fase Final. Pergunta-me sobre a sintaxe Python! 🖥️</div>
+            <div class="msg msg-bot">Olá! Sou a sua assistente para a Fase Final. Pergunte-me sobre a sintaxe Python! 🖥️</div>
         </div>
         <div class="ia-input-area">
-            <input class="ia-chat-input" id="ia-input" type="text" placeholder="Pergunta algo..." onkeydown="if(event.key==='Enter') enviarMensagem()">
+            <input class="ia-chat-input" id="ia-input" type="text" placeholder="Pergunte algo..." onkeydown="if(event.key==='Enter') enviarMensagem()">
             <button class="ia-send-btn" onclick="enviarMensagem()">➤</button>
         </div>
     </div>
@@ -279,7 +279,7 @@
             if (!temInput||!temCalculo||!temCondicao||!temPrint) {
                 log('<span class="line-err">SyntaxError: Comando ausente ou incorreto.</span>');
                 log('<span class="line-muted">Verifica: int(input()), cálculo ×15, if >100: e print.</span>');
-                setTimeout(() => mostrarModal(false,"Erro no script!","Algum comando está ausente. Consulta a referência rápida no painel Desafio."), 600);
+                setTimeout(() => mostrarModal(false,"Erro no script!","Algum comando está ausente. Consulte a referência rápida no painel Desafio."), 600);
                 return;
             }
             log('<span class="line-info">> Iniciando: vazamento.py</span>');
@@ -287,7 +287,7 @@
             setTimeout(()=>{ log('<span class="line-muted">[PROCESS] 10 × 15 = 150 litros</span>');
             setTimeout(()=>{ log('<span class="line-warn">[OUTPUT]  Alerta Crítico!</span>');
             setTimeout(()=>{ log('<span class="line-ok">✔ Script executado! Trilha concluída! 🎉</span>');
-            setTimeout(()=>mostrarModal(true,"Trilha concluída! 🏆","Passaste pelas 3 fases: Lógica Visual → Blocos Python → Código Real. Parabéns!"),400);
+            setTimeout(()=>mostrarModal(true,"Trilha concluída! 🏆","Passou pelas 3 fases: Lógica Visual → Blocos Python → Código Real. Parabéns!"),400);
             },400);},500);},500);},300);
         }
         function mostrarModal(ok, titulo, msg) {
@@ -322,10 +322,10 @@
         function gerarResposta(q) {
             if(q.includes('input')||q.includes('ler')) return 'Para ler dados: minutos = int(input()). O int() converte o texto em número inteiro!';
             if(q.includes('calculo')||q.includes('desperdicio')||q.includes('15')) return '"desperdicio = minutos * 15" calcula os litros perdidos. Armazena numa variável!';
-            if(q.includes('if')||q.includes('condição')||q.includes('100')) return '"if desperdicio > 100:" — não esqueças os dois pontos (:) no final!';
+            if(q.includes('if')||q.includes('condição')||q.includes('100')) return '"if desperdicio > 100:" — não esqueça os dois pontos (:) no final!';
             if(q.includes('print')||q.includes('output')) return '4 espaços antes de print("Alerta Crítico!"). Indentação obrigatória dentro do if!';
-            if(q.includes('erro')||q.includes('error')||q.includes('syntax')) return 'Verifica: 1) int(input()) 2) *15 3) if com ":" 4) print com 4 espaços. Nessa ordem!';
-            return 'Consulta a referência rápida no painel Desafio. Código Python: linha a linha, na ordem certa! 🖥️';
+            if(q.includes('erro')||q.includes('error')||q.includes('syntax')) return 'Verifique: 1) int(input()) 2) *15 3) if com ":" 4) print com 4 espaços. Nessa ordem!';
+            return 'Consulte a referência rápida no painel Desafio. Código Python: linha a linha, na ordem certa! 🖥️';
         }
     </script>
 </body>

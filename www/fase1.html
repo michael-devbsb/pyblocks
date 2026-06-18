@@ -323,7 +323,7 @@
             <div class="cenario-box">
                 <p><strong>Cenário:</strong> Um cano quebrado desperdiça <strong>15 litros de água por minuto</strong>. Precisamos calcular o desperdício e emitir um alerta!</p>
             </div>
-            <p class="instrucao">Arrasta as formas para o canvas e posiciona-as <strong style="color:var(--primary)">de cima para baixo</strong> na ordem lógica correta.</p>
+            <p class="instrucao">Arraste as formas para o canvas e posicione-as <strong style="color:var(--primary)">de cima para baixo</strong> na ordem lógica correta.</p>
             <div class="legenda-formas">
                 <h4>Guia de formas</h4>
                 <div class="leg-item">
@@ -347,7 +347,7 @@
 
         <div class="panel-combined ativo" id="panel-combined">
             <section class="panel-construcao">
-                <h3>↙ Arrasta as formas para montar</h3>
+                <h3>↙ Arraste as formas para montar</h3>
                 <div id="fluxo-canvas"
                      ondragover="canvasDragOver(event)"
                      ondragleave="canvasDragLeave(event)"
@@ -363,7 +363,7 @@
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M12 5v14M5 12l7 7 7-7"/>
                         </svg>
-                        Arrasta as formas aqui
+                        Arraste as formas aqui
                     </div>
                 </div>
                 <button class="btn-testar" onclick="verificarAlgoritmo()">▶ Testar Fluxograma</button>
@@ -372,7 +372,7 @@
 
             <section class="panel-componentes">
                 <h3>Formas</h3>
-                <p style="margin-bottom:14px;">Arrasta cada forma para o canvas:</p>
+                <p style="margin-bottom:14px;">Arraste cada forma para o canvas:</p>
                 <div class="formas-paleta" id="formas-paleta">
 
                     <div class="forma-card" id="card-inicio" draggable="true" data-tipo="inicio"
@@ -454,7 +454,7 @@
             <button class="ia-chat-close" onclick="toggleIA()">×</button>
         </div>
         <div class="ia-messages" id="ia-messages">
-            <div class="msg msg-bot">Olá! Sou a tua assistente para a Fase 1. Pergunta-me qualquer coisa sobre o fluxograma! 🌿</div>
+            <div class="msg msg-bot">Olá! Sou a sua assistente para a Fase 1. Pergunte-me qualquer coisa sobre o fluxograma! 🌿</div>
         </div>
         <div class="ia-input-area">
             <input class="ia-chat-input" id="ia-input" type="text" placeholder="Pergunta algo..." onkeydown="if(event.key==='Enter') enviarMensagem()">
@@ -849,7 +849,7 @@ function verificarAlgoritmo() {
     const correta = ['item-inicio', 'item-dados', 'item-processo', 'item-decisao'];
 
     if (nodesOnCanvas.length < 4) {
-        mostrarModal(false, 'Algoritmo incompleto!', 'Usa todos os 4 blocos para montar o fluxograma completo.');
+        mostrarModal(false, 'Algoritmo incompleto!', 'Use todos os 4 blocos para montar o fluxograma completo.');
         return;
     }
 
@@ -859,10 +859,10 @@ function verificarAlgoritmo() {
 
     mostrarModal(
         acertou,
-        acertou ? 'Fluxo perfeito! 🌍' : 'Sequência incorrecta!',
+        acertou ? 'Fluxo perfeito! 🌍' : 'Sequência incorreta!',
         acertou
-            ? 'Construíste o algoritmo correctamente!'
-            : 'A ordem lógica falhou. Pensa: o que o algoritmo precisa saber primeiro?'
+            ? 'Construiu o algoritmo corretamente!'
+            : 'A ordem lógica falhou. Pense: o que o algoritmo precisa saber primeiro?'
     );
 }
 
@@ -924,12 +924,12 @@ function enviarMensagem() {
 
 function gerarResposta(q) {
     if (q.includes('início') || q.includes('start'))        return 'O bloco INÍCIO marca o ponto de entrada. Todo fluxograma começa aqui!';
-    if (q.includes('ler') || q.includes('input') || q.includes('minutos')) return 'O bloco LER recebe os dados do utilizador — no nosso caso, os minutos de vazamento.';
+    if (q.includes('ler') || q.includes('input') || q.includes('minutos')) return 'O bloco LER recebe os dados do usuário — no nosso caso, os minutos de vazamento.';
     if (q.includes('calcula') || q.includes('15') || q.includes('processo')) return 'CALCULAR multiplica os minutos por 15 para obter o total de litros perdidos.';
     if (q.includes('se') || q.includes('if') || q.includes('100') || q.includes('decisao')) return 'O bloco SE verifica a condição: se desperdício > 100L, emite alerta crítico!';
     if (q.includes('ordem') || q.includes('sequência')) return 'Ordem correcta: INÍCIO → LER → CALCULAR → SE. Segue esse fluxo!';
     if (q.includes('seta') || q.includes('arrow') || q.includes('connect')) return 'As setas aparecem automaticamente ligando os nós de cima para baixo conforme os posicionas no canvas!';
-    return 'Pensa em passos: receber dados → calcular → decidir. Segue essa lógica! 💪';
+    return 'PensE em passos: receber dados → calcular → decidir. Segue essa lógica! 💪';
 }
 </script>
 </body>
